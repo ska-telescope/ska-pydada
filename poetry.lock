@@ -10,7 +10,7 @@ files = []
 
 [[package]]
 name = "autoflake"
-version = "2.3.0"
+version = "2.3.1"
 description = "Removes unused imports and unused variables"
 optional = false
 python-versions = "*"
@@ -36,6 +36,14 @@ files = []
 name = "breathe"
 version = "4.35.0"
 description = "Sphinx Doxygen renderer"
+optional = false
+python-versions = "*"
+files = []
+
+[[package]]
+name = "click"
+version = "8.1.7"
+description = "Composable command line interface toolkit"
 optional = false
 python-versions = "*"
 files = []
@@ -490,5 +498,5 @@ files = []
 
 [metadata]
 lock-version = "2.0"
-python-versions = ">=3.10,<3.12"
-content-hash = "23caa2b682e464ae367ed95756380f71a7977300d78bc081d0e746907325535b"
+python-versions = ">=3.10,<=3.12.2"
+content-hash = "504ac9dd3c56d9a1b3594ffaf4cda63bfe3c47da8ab1fb5fd88b6c8d0d6a1aff"
