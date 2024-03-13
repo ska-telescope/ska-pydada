@@ -26,6 +26,9 @@ def setup(app):
     app.add_css_file('css/custom.css')
     app.add_js_file('js/github.js')
 
+# Setup Python path
+sys.path.insert(0, os.path.abspath("../../src"))
+
 # -- General configuration ------------------------------------------------
 
 # If your documentation needs a minimal Sphinx version, state it here.
