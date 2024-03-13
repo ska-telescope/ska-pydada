@@ -16,7 +16,7 @@ packages = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.12"
+python = ">=3.10,<=3.12.2"
 readerwriterlock = "^1.0.9"
 backoff = "^2.2.1"
 pandas = "^2.2.1"
