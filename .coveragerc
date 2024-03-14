@@ -1,5 +1,4 @@
 [run]
-omit = src/ska_pst_lmc_proto/*
 
 [report]
 exclude_lines =
