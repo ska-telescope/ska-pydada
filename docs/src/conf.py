@@ -68,7 +68,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'SKA PST'
-copyright = '2022 Square Kilometre Array Observatory'
+copyright = '2024 Square Kilometre Array Observatory'
 author = 'PST Team'
 
 # The full version, including alpha/beta/rc tags

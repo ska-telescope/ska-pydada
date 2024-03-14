@@ -9,7 +9,7 @@ def function_example():
     pass
 
 
-# TODO: Replace all the following code with the d
+# TODO: Replace all the following code with the
 # desired functionality for the package
 class SKAPyDada:
     """Define class, methods etc."""
