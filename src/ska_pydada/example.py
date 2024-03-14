@@ -16,7 +16,7 @@ def function_example():
 
 # TODO: Replace all the following code with the
 # desired functionality for the package
-class SKAPyDada:
+class SKAPyDADA:
     """Define class, methods etc."""
 
     something = 0

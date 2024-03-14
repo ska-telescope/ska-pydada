@@ -8,6 +8,6 @@
 """Module init code."""
 __version__ = "0.0.1"
 
-__all__ = ["SKAPyDada"]
+__all__ = ["SKAPyDADA"]
 
-from .example import SKAPyDada
+from .example import SKAPyDADA

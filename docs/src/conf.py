@@ -59,7 +59,7 @@ source_suffix = ['.rst', '.md']
 master_doc = 'index'
 
 # General information about the project.
-project = 'SKA PST'
+project = 'SKA PyDADA'
 copyright = '2024 Square Kilometre Array Observatory'
 author = 'PST Team'
 

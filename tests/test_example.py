@@ -8,7 +8,7 @@
 """Tests for the ska_python_skeleton module."""
 import pytest
 
-from ska_pydada import SKAPyDada
+from ska_pydada import SKAPyDADA
 
 # from ska.skeleton import SKA, function_example
 
@@ -42,6 +42,6 @@ def test_ska_python_skeleton(an_object):
 def test_package():
     """Assert the ska_python_skeleton package code."""
     # assert function_example() is None
-    foo = SKAPyDada()
+    foo = SKAPyDADA()
     assert foo.example_2() == 2
     assert foo.example() is None

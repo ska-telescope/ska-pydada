@@ -27,6 +27,6 @@ Functions
 
 Classes
 -------
-.. autoclass:: ska_pydada.SKAPyDada
+.. autoclass:: ska_pydada.SKAPyDADA
     :noindex:
     :members:
