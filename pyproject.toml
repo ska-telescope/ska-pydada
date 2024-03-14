@@ -1,0 +1,43 @@
+[tool.poetry]
+name = "ska-pydada"
+version = "0.0.1"
+description = "SKA Pulsar DADA Library"
+authors = [
+    "Andrew Jameson <ajameson@fourierspace.com.au>",
+    "Jesmigel Cantos <jesmigel.developer@gmail.com>",
+    "Will Gauvin <wgauvin@swin.edu.au>",
+    "Willem van Straten <wvanstraten@fourierspace.com.au>"
+
+]
+license = "BSD-3-Clause"
+readme = "README.md"
+packages = [
+  { include = "ska_pydada", from ="src" },
+]
+
+[tool.poetry.dependencies]
+python = ">=3.10,<=3.12.2"
+
+[tool.poetry.group.dev.dependencies]
+black = "*"
+flake8 = "*"
+mypy = "*"
+pytest = "*"
+pytest-cov = "*"
+pylint-junit = "*"
+
+
+[tool.poetry.group.docs.dependencies]
+sphinx-rtd-theme = "*"
+sphinxcontrib-plantuml = "*"
+sphinx-autodoc-typehints = "*"
+docutils = "<0.18"
+markupsafe = "<2.1.0"
+sphinx = "*"
+transitions = "*"
+typing-extensions = "*"
+recommonmark = "*"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
