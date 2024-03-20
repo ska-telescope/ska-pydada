@@ -15,16 +15,44 @@ packages = [
   { include = "ska_pydada", from ="src" },
 ]
 
+[[tool.poetry.source]]
+name = 'ska-nexus'
+url = 'https://artefact.skao.int/repository/pypi-internal/simple'
+
+
 [tool.poetry.dependencies]
 python = ">=3.10,<=3.12.2"
+numpy = "^1.23.0"
+nptyping = "*"
 
 [tool.poetry.group.dev.dependencies]
+autoflake = "*"
+backoff = "*"
 black = "*"
+coverage = "*"
+docformatter = "*"
 flake8 = "*"
+flake8-black = "*"
+flake8-docstrings = "*"
+flake8-formatter-junit-xml = "*"
+flake8-rst-docstrings = "*"
+flaky = "*"
+ipython = "*"
+isort = "*"
+mock = "*"
 mypy = "*"
+pyflakes = "*"
+pylint = "*"
+pylint-junit = "*"
 pytest = "*"
 pytest-cov = "*"
-pylint-junit = "*"
+pytest-json-report = "*"
+pytest-metadata = "*"
+pytest-mock = "*"
+pytest-pycodestyle = "*"
+pytest-pydocstyle = "*"
+pytest-pylint = "*"
+pytest-runner = "*"
 
 
 [tool.poetry.group.docs.dependencies]
