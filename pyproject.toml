@@ -41,6 +41,8 @@ ipython = "*"
 isort = "*"
 mock = "*"
 mypy = "*"
+nbqa = "*"
+nbmake = "*"
 pyflakes = "*"
 pylint = "*"
 pylint-junit = "*"
@@ -65,6 +67,12 @@ sphinx = "*"
 transitions = "*"
 typing-extensions = "*"
 recommonmark = "*"
+
+
+[tool.poetry.group.jupyterlab.dependencies]
+jupyter = "*"
+jupyterlab = "*"
+
 
 [build-system]
 requires = ["poetry-core"]
