@@ -15,7 +15,6 @@ __all__ = [
 
 import logging
 import pathlib
-from io import BufferedWriter
 from typing import Any
 
 import numpy as np
@@ -85,43 +84,27 @@ class DadaFile:
         dada_file.load_next(chunk_size=chunk_size)
         return dada_file
 
-    def _dump(self: DadaFile, fd: BufferedWriter) -> None:
-        header_bytes = self.header.to_bytes()
-        fd.write(header_bytes)
-        fd.write(self.raw_data)
-        fd.flush()
-
     def dump(
         self: DadaFile,
-        file: BufferedWriter | pathlib.Path | str,
+        file: pathlib.Path | str,
     ) -> None:
         """Dump the data to an external file.
 
-        This method takes either and already opened byte
-        file descriptor or a file location. This method will
-        overwrite an existing file if it exists.
+        This method takes a path to file location to write to.
+        This method will overwrite an existing file if it exists.
 
-        If passing in a file descriptor, the file should be
-        opened as writable and as a binary file.
-
-        .. code-block:: python
-
-            with open(file, "wb") as fd:
-                dada_file.dump(file)
-
-        :param file: an open file descriptor or a path to the
-            file to write to.
-        :type file: BufferedWriter | pathlib.Path | str
+        :param file: the path to the file to write to.
+        :type file: pathlib.Path | str
         """
-        if isinstance(file, BufferedWriter):
-            self._dump(fd=file)
-        else:
-            file = pathlib.Path(file)
-            if file.exists():
-                self._logger.warning(f"{str(file)} already exists, overwriting it")
+        file = pathlib.Path(file)
+        if file.exists():
+            self._logger.warning(f"{str(file)} already exists, overwriting it")
 
-            with open(file, "wb") as fd:
-                self._dump(fd=fd)
+        with open(file, "wb") as fd:
+            header_bytes = self.header.to_bytes()
+            fd.write(header_bytes)
+            fd.write(self.raw_data)
+            fd.flush()
 
     def load_next(self: DadaFile, *, chunk_size: int = MAX_DATA_CHUNK_SIZE) -> int:
         """Load the next chunk of data.
@@ -290,17 +273,6 @@ class DadaFile:
         """
         data = np.frombuffer(self.raw_data, dtype=dtype)
         if shape is not None:
-            data = data.reshape(shape=shape)
-
-        return data
-
-    def _from_raw_data(
-        self: DadaFile,
-        shape: np._ShapeType | None = None,
-        dtype: npt.DTypeLike = np.uint8,
-    ) -> np.ndarray:
-        data = np.frombuffer(self._raw_data, dtype=dtype)
-        if shape is not None:
             data = data.reshape(shape)
 
         return data
@@ -317,7 +289,7 @@ class DadaFile:
         :return: the raw data as a Numpy byte array.
         :rtype: np.ndarray
         """
-        return self._from_raw_data(shape=shape, dtype=np.uint8)
+        return self.data(shape=shape, dtype=np.uint8)
 
     def data_i8(self: DadaFile, shape: np._ShapeType | None = None) -> np.ndarray:
         """Get the data as a signed 8-bit integer Numpy array.
@@ -331,7 +303,7 @@ class DadaFile:
         :return: the raw data as a signed 8-bit integer Numpy array.
         :rtype: np.ndarray
         """
-        return self._from_raw_data(shape=shape, dtype=np.int8)
+        return self.data(shape=shape, dtype=np.int8)
 
     def data_i16(self: DadaFile, shape: np._ShapeType | None = None) -> np.ndarray:
         """Get the data as a signed 16-bit integer Numpy array.
@@ -345,7 +317,7 @@ class DadaFile:
         :return: the raw data as a signed 16-bit integer Numpy array.
         :rtype: np.ndarray
         """
-        return self._from_raw_data(shape=shape, dtype=np.int16)
+        return self.data(shape=shape, dtype=np.int16)
 
     def data_i32(self: DadaFile, shape: np._ShapeType | None = None) -> np.ndarray:
         """Get the data as a signed 32-bit integer Numpy array.
@@ -359,7 +331,7 @@ class DadaFile:
         :return: the raw data as a signed 32-bit integer Numpy array.
         :rtype: np.ndarray
         """
-        return self._from_raw_data(shape=shape, dtype=np.int32)
+        return self.data(shape=shape, dtype=np.int32)
 
     def data_f32(self: DadaFile, shape: np._ShapeType | None = None) -> np.ndarray:
         """Get the data as a 32-bit floating point Numpy array.
@@ -373,7 +345,7 @@ class DadaFile:
         :return: the raw data as a 32-bit floating point Numpy array.
         :rtype: np.ndarray
         """
-        return self._from_raw_data(shape=shape, dtype=np.float32)
+        return self.data(shape=shape, dtype=np.float32)
 
     def data_c64(self: DadaFile, shape: np._ShapeType | None = None) -> np.ndarray:
         """Get the data as a 64-bit complex valued Numpy array.
@@ -390,7 +362,7 @@ class DadaFile:
         :return: the raw data as a 64-bit complex value Numpy array.
         :rtype: np.ndarray
         """
-        return self._from_raw_data(shape=shape, dtype=np.complex64)
+        return self.data(shape=shape, dtype=np.complex64)
 
     def as_time_freq_pol(self: DadaFile) -> np.ndarray:
         """Get the data as time, frequency and polarisation 3 dimensional array.
@@ -417,9 +389,9 @@ class DadaFile:
         :return: the raw data converted into a TFP Numpy array.
         :rtype: np.ndarray
         """
-        npol = int(self.header["NPOL"])
-        nchan = int(self.header["NCHAN"])
-        ndim = int(self.header["NDIM"])
+        npol = self.header.get_int("NPOL")
+        nchan = self.header.get_int("NCHAN")
+        ndim = self.header.get_int("NDIM")
 
         assert ndim in {1, 2}, f"currently on supports real or complex valued data. ndim={ndim}"
 

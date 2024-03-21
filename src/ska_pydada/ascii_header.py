@@ -52,7 +52,8 @@ class AsciiHeader(OrderedDict):
         assert (
             header_size >= DEFAULT_HEADER_SIZE
         ), f"expected {header_size=} to be at least {DEFAULT_HEADER_SIZE}"
-        kwargs[HEADER_SIZE_KEY] = str(header_size)
+        if HEADER_SIZE_KEY not in kwargs:
+            kwargs[HEADER_SIZE_KEY] = str(header_size)
         super().__init__(**kwargs)
 
     @staticmethod
@@ -159,16 +160,16 @@ class AsciiHeader(OrderedDict):
         :rtype: int
         """
         try:
-            return int(self[RESOLUTION])
+            return self.get_int(RESOLUTION)
         except KeyError:
             pass
 
         try:
-            ndim = int(self[NDIM])
-            nbit = int(self[NBIT])
-            npol = int(self[NPOL])
-            nchan = int(self[NCHAN])
-            udp_nsamp = int(self[UDP_NSAMP])
+            ndim = self.get_int(NDIM)
+            nbit = self.get_int(NBIT)
+            npol = self.get_int(NPOL)
+            nchan = self.get_int(NCHAN)
+            udp_nsamp = self.get_int(UDP_NSAMP)
 
             return nchan * nbit * ndim * npol * udp_nsamp // BITS_PER_BYTE
         except KeyError:

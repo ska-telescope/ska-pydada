@@ -5,6 +5,4 @@
 # Distributed under the terms of the BSD 3-clause new license.
 # See LICENSE.txt for more info.
 
-"""Module init code."""
-
-__version__ = "0.0.1"
+"""This subpackage contains tests of the ska-pydada project."""
