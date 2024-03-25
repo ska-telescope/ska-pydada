@@ -69,6 +69,7 @@ typing-extensions = "*"
 recommonmark = "*"
 nbsphinx = "*"
 pandoc = "*"
+ipython = "*"
 
 
 [tool.poetry.group.jupyterlab.dependencies]
