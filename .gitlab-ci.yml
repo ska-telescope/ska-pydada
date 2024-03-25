@@ -32,9 +32,14 @@ include:
   - project: 'ska-telescope/templates-repository'
     file: 'gitlab-ci/includes/python.gitlab-ci.yml'
 
+  # Jupyter notebook linting and testing
+  - project: 'ska-telescope/templates-repository'
+    file: 'gitlab-ci/includes/notebook.gitlab-ci.yml'
+
   # Docs pages
   - project: 'ska-telescope/templates-repository'
     file: 'gitlab-ci/includes/docs.gitlab-ci.yml'
+  - local: '.gitlab/ci/docs.yml'
 
   # Create Gitlab CI badges from CI metrics
   - project: 'ska-telescope/templates-repository'

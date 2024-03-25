@@ -3,6 +3,7 @@ PrivateRules.mak
 
 build/*
 docs/build/*
+docs/src/api/_autosummary/**/*.rst*
 
 # Deployments
 build

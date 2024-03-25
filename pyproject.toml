@@ -67,6 +67,8 @@ sphinx = "*"
 transitions = "*"
 typing-extensions = "*"
 recommonmark = "*"
+nbsphinx = "*"
+pandoc = "*"
 
 
 [tool.poetry.group.jupyterlab.dependencies]
