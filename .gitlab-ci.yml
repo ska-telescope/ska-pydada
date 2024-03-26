@@ -25,6 +25,7 @@ stages:
 # Standardised included jobs
 variables:
   GIT_SUBMODULE_STRATEGY: recursive
+  CI_POETRY_VERSION: 1.3.2
 
 # Include CI templates
 include:
@@ -32,9 +33,15 @@ include:
   - project: 'ska-telescope/templates-repository'
     file: 'gitlab-ci/includes/python.gitlab-ci.yml'
 
+  # Jupyter notebook linting and testing
+  - project: 'ska-telescope/templates-repository'
+    file: 'gitlab-ci/includes/notebook.gitlab-ci.yml'
+  - local: '.gitlab/ci/notebook.yml'
+
   # Docs pages
   - project: 'ska-telescope/templates-repository'
     file: 'gitlab-ci/includes/docs.gitlab-ci.yml'
+  - local: '.gitlab/ci/docs.yml'
 
   # Create Gitlab CI badges from CI metrics
   - project: 'ska-telescope/templates-repository'

@@ -22,23 +22,21 @@
    :maxdepth: 2
    :caption: Readme
 
-   ../../README
+   README
 
-.. COMMUNITY SECTION ==================================================
-
-..
+.. API ==============================================================
 
 .. toctree::
   :maxdepth: 2
-  :caption: Package name
-  :hidden:
+  :caption: API
 
-  package/guide
+  Python API<api/index>
 
+.. Notebooks ==============================================================
 
-Project-name documentation HEADING
-==================================
+.. toctree::
+  :maxdepth: 2
+  :caption: Notebooks
 
-These are all the packages, functions and scripts that form part of the project.
+  ../../notebooks/example_usage
 
-- :doc:`package/guide`

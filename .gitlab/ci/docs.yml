@@ -1,0 +1,21 @@
+docs-pages:
+  script:
+  - time apt-get update -y
+  - time apt-get install -y graphviz pandoc
+  - make docs-build html
+  - |
+    if [[ -d docs/build/html/ ]]; then
+      mv docs/build/html/ public;
+    else
+      echo "WARNING: no docs/build/html/";
+    fi;
+  dependencies: []
+  needs: [docs-build]
+
+docs-build:
+  script:
+  - time apt-get update -y
+  - time apt-get install -y graphviz pandoc
+  - make docs-build html
+  dependencies: []
+  needs: []
