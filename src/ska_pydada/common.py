@@ -34,8 +34,8 @@ MEGABYTE: int = 1024 * 1024
 """Number of bytes in a megabyte."""
 
 # 4MB
-MAX_DATA_CHUNK_SIZE: int = 4 * MEGABYTE
-"""Maximum size of a chunck of data to read."""
+DEFAULT_DATA_CHUNK_SIZE: int = 4 * MEGABYTE
+"""Default size of a chunck of data to read."""
 
 # DADA Header keys
 HEADER_SIZE_KEY: str = "HDR_SIZE"
@@ -67,4 +67,4 @@ NCHAN: str = "NCHAN"
 """The header key used to define the number of frequency channels in the data."""
 
 UDP_NSAMP: str = "UDP_NSAMP"
-"""The header key used to define the number of samples of each channel per UDP packet."""
+"""The header key used to define the number of time samples in a data heap, defines the RESOLUTION size."""

@@ -5,7 +5,7 @@
 # Distributed under the terms of the BSD 3-clause new license.
 # See LICENSE.txt for more info.
 
-"""This file contains unit tests for ska_pydada.AsciiHeader."""
+"""This file contains unit tests for ska_pydada.DadaFile."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ import numpy.typing as npt
 import pytest
 
 from ska_pydada import AsciiHeader, DadaFile
-from ska_pydada.common import MAX_DATA_CHUNK_SIZE
+from ska_pydada.common import DEFAULT_DATA_CHUNK_SIZE
 
 
 def test_dada_file_create() -> None:
@@ -54,7 +54,7 @@ def test_dada_file_create() -> None:
     assert dada_file.get_header_value("UTC_START") == "2017-08-01-15:53:29"
 
 
-def test_dada_file_load_from_file(temp_dada_file: IO[Any], header_file: pathlib.Path) -> None:
+def test_dada_file_load_from_file(temp_file: IO[Any], header_file: pathlib.Path) -> None:
     """Test load from file."""
     header = AsciiHeader.from_file(header_file)
     raw_data = np.random.rand(400).astype(dtype=np.float32).tobytes()
@@ -63,9 +63,9 @@ def test_dada_file_load_from_file(temp_dada_file: IO[Any], header_file: pathlib.
         header=header,
         raw_data=raw_data,
     )
-    dada_file.dump(file=temp_dada_file.name)
+    dada_file.dump(file=temp_file.name)
 
-    loaded_dada_file = DadaFile.load_from_file(temp_dada_file.name)
+    loaded_dada_file = DadaFile.load_from_file(temp_file.name)
 
     assert header == loaded_dada_file.header
     assert dada_file.raw_data == loaded_dada_file.raw_data
@@ -73,23 +73,23 @@ def test_dada_file_load_from_file(temp_dada_file: IO[Any], header_file: pathlib.
     assert loaded_dada_file.data_size == len(raw_data)
 
 
-def test_dada_file_load_large_file(temp_dada_file: IO[Any], header_file: pathlib.Path) -> None:
+def test_dada_file_load_large_file(temp_file: IO[Any], header_file: pathlib.Path) -> None:
     """Test loading a large file greater than 4MB."""
     header = AsciiHeader.from_file(header_file)
 
     # generate raw data floats
     num_floats = 20 * header.resolution
     raw_data = np.random.rand(num_floats).astype(dtype=np.float32).tobytes()
-    assert len(raw_data) >= MAX_DATA_CHUNK_SIZE
+    assert len(raw_data) >= DEFAULT_DATA_CHUNK_SIZE
 
     dada_file = DadaFile(header=header, raw_data=raw_data)
-    dada_file.dump(file=temp_dada_file.name)
+    dada_file.dump(file=temp_file.name)
 
-    new_dada_file = DadaFile.load_from_file(file=temp_dada_file.name)
-    assert len(new_dada_file.raw_data) >= MAX_DATA_CHUNK_SIZE
+    new_dada_file = DadaFile.load_from_file(file=temp_file.name)
+    assert len(new_dada_file.raw_data) >= DEFAULT_DATA_CHUNK_SIZE
     assert len(new_dada_file.raw_data) % header.resolution == 0
     assert new_dada_file.data_size == len(raw_data)
-    assert new_dada_file.est_num_chunks() == int(np.ceil(len(raw_data) / MAX_DATA_CHUNK_SIZE))
+    assert new_dada_file.est_num_chunks() == int(np.ceil(len(raw_data) / DEFAULT_DATA_CHUNK_SIZE))
 
     # reset the data pointer to 0
     new_dada_file._file_data_ptr = 0
@@ -106,7 +106,7 @@ def test_dada_file_load_large_file(temp_dada_file: IO[Any], header_file: pathlib
     assert new_dada_file.est_num_chunks() >= count
 
 
-def test_dada_file_as_time_freq_pol_float32(temp_dada_file: IO[Any], header_file: pathlib.Path) -> None:
+def test_dada_file_as_time_freq_pol_float32(temp_file: IO[Any], header_file: pathlib.Path) -> None:
     """Test DadaFile converting time freq pol for real valued data."""
     header = AsciiHeader.from_file(header_file)
 
@@ -120,9 +120,9 @@ def test_dada_file_as_time_freq_pol_float32(temp_dada_file: IO[Any], header_file
     raw_data = tfp_data.tobytes()
 
     dada_file = DadaFile(header=header, raw_data=raw_data)
-    dada_file.dump(file=temp_dada_file.name)
+    dada_file.dump(file=temp_file.name)
 
-    dada_file = DadaFile.load_from_file(file=temp_dada_file.name)
+    dada_file = DadaFile.load_from_file(file=temp_file.name)
     assert dada_file.raw_data == raw_data
 
     actual_tfp_data = dada_file.as_time_freq_pol()
@@ -131,8 +131,8 @@ def test_dada_file_as_time_freq_pol_float32(temp_dada_file: IO[Any], header_file
     np.testing.assert_allclose(actual_tfp_data, tfp_data)
 
 
-def test_dada_file_as_time_freq_pol_complex64(temp_dada_file: IO[Any], header_file: pathlib.Path) -> None:
-    """Test DadaFile converting time freq pol for real valued data."""
+def test_dada_file_as_time_freq_pol_complex64(temp_file: IO[Any], header_file: pathlib.Path) -> None:
+    """Test DadaFile converting time freq pol for complex valued data."""
     header = AsciiHeader.from_file(header_file)
 
     nchan = header.get_int("NCHAN")
@@ -146,9 +146,9 @@ def test_dada_file_as_time_freq_pol_complex64(temp_dada_file: IO[Any], header_fi
     raw_data = tfp_data.tobytes()
 
     dada_file = DadaFile(header=header, raw_data=raw_data)
-    dada_file.dump(file=temp_dada_file.name)
+    dada_file.dump(file=temp_file.name)
 
-    dada_file = DadaFile.load_from_file(file=temp_dada_file.name)
+    dada_file = DadaFile.load_from_file(file=temp_file.name)
     assert dada_file.raw_data == raw_data
 
     actual_tfp_data = dada_file.as_time_freq_pol()

@@ -38,5 +38,5 @@
   :maxdepth: 2
   :caption: Notebooks
 
-  ../../notebooks/example_useage
+  ../../notebooks/example_usage
 

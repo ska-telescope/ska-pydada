@@ -5,7 +5,7 @@
 # Distributed under the terms of the BSD 3-clause new license.
 # See LICENSE for more info.
 
-"""Module class to write PSR DADA files."""
+"""Module class to read and write PSR DADA files."""
 
 from __future__ import annotations
 
@@ -21,7 +21,7 @@ import numpy as np
 import numpy.typing as npt
 
 from .ascii_header import AsciiHeader
-from .common import DEFAULT_HEADER_SIZE, MAX_DATA_CHUNK_SIZE, SIZE_OF_COMPLEX64, SIZE_OF_FLOAT32
+from .common import DEFAULT_DATA_CHUNK_SIZE, DEFAULT_HEADER_SIZE, SIZE_OF_COMPLEX64, SIZE_OF_FLOAT32
 
 
 class DadaFile:
@@ -51,13 +51,15 @@ class DadaFile:
 
     @staticmethod
     def load_from_file(
-        file: pathlib.Path | str, chunk_size: int = MAX_DATA_CHUNK_SIZE, logger: logging.Logger | None = None
+        file: pathlib.Path | str,
+        chunk_size: int = DEFAULT_DATA_CHUNK_SIZE,
+        logger: logging.Logger | None = None,
     ) -> DadaFile:
         """Load a DADA file and create an instance of a :py:class:`DadaFile`.
 
         :param file: a path to the file to load.
         :type file: pathlib.Path | str
-        :param chunk_size: the maximum amount of data to load, defaults to MAX_DATA_LOAD_SIZE.
+        :param chunk_size: the maximum amount of data to load, defaults to DEFAULT_DATA_CHUNK_SIZE.
             If the file is more than the maximum amount then more data can be read by calling
             :py:meth:`load_next` on the instance returned.
         :type chunk_size: int, optional
@@ -106,7 +108,7 @@ class DadaFile:
             fd.write(self.raw_data)
             fd.flush()
 
-    def load_next(self: DadaFile, *, chunk_size: int = MAX_DATA_CHUNK_SIZE) -> int:
+    def load_next(self: DadaFile, *, chunk_size: int = DEFAULT_DATA_CHUNK_SIZE) -> int:
         """Load the next chunk of data.
 
         This will load the next chunk of data as a multiple of the ``RESOLUTION``
@@ -114,7 +116,7 @@ class DadaFile:
         of data that can be loaded can be set by passing through a ``chunk_size``
         parameter, the default value is 4MB of dada.
 
-        :param chunk_size: the amount of data to load, defaults to MAX_DATA_LOAD_SIZE.
+        :param chunk_size: the amount of data to load, defaults to DEFAULT_DATA_CHUNK_SIZE.
             This method will round up to the nearest ``RESOLUTION`` or to the end
             of the file depending if there is not enough data left to read.
         :type chunk_size: int, optional
@@ -149,7 +151,7 @@ class DadaFile:
 
         return chunk_size
 
-    def est_num_chunks(self: DadaFile, chunk_size: int = MAX_DATA_CHUNK_SIZE) -> int:
+    def est_num_chunks(self: DadaFile, chunk_size: int = DEFAULT_DATA_CHUNK_SIZE) -> int:
         """Get an estimate of number of data chunks given the ``chunk_size``.
 
         This method calculates the estimate number of chucks of data the whole
@@ -157,7 +159,7 @@ class DadaFile:
         account that the :py:meth:`load_next` method rounds this value up
         to the nearest ``RESOLUTION``.
 
-        :param chunk_size: the size of a chunk in bytes, defaults to MAX_DATA_LOAD_SIZE
+        :param chunk_size: the size of a chunk in bytes, defaults to DEFAULT_DATA_CHUNK_SIZE
         :type chunk_size: int, optional
         :return: the estimated number of chunks of data.
         :rtype: int
@@ -201,11 +203,12 @@ class DadaFile:
         """Get the overall size of the data block of the DADA file.
 
         This value is equal the total file size minus the size of the
-        header.  If this we no loaded from a file (i.e. currently creating
-        a file before dumping to the file system) then this value returns
-        the size of the raw data that has been added to the instance.
+        header.  If this instance was not loaded from a file (i.e.
+        currently creating a file before dumping to the file system)
+        then this value returns the size of the raw data that has been
+        added to the instance.
 
-        :return: the size of the data block with the output file.
+        :return: the size of the data block with the output file in bytes.
         :rtype: int
         """
         if self._file is not None:
@@ -265,10 +268,10 @@ class DadaFile:
         :param shape: the required shape of the output array, defaults to None.
             If no shape provided then a 1D array is returned.
         :type shape: np._ShapeType | None, optional
-        :param dtype: the data type to have the raw bytes converted from,
+        :param dtype: the data type to have the raw bytes converted to,
             defaults to np.uint8.
         :type dtype: npt.DTypeLike, optional
-        :return: the raw data converted to a Numpy with a given type and shape.
+        :return: the raw data converted to a Numpy array with a given type and shape.
         :rtype: np.ndarray
         """
         data = np.frombuffer(self.raw_data, dtype=dtype)
@@ -375,7 +378,7 @@ class DadaFile:
             * polarisation
 
         The ``NCHAN`` header value defines the number of frequency channels.
-        The ``NPOL`` parameter will defined the number of polarisations.
+        The ``NPOL`` parameter defines the number of polarisations.
 
         This may return real or complex values based on the ``NDIM`` value in the
         header. If ``NDIM`` is 1 then real floating point data is returned, if 2 then
@@ -437,7 +440,7 @@ class DadaFile:
         :param key: the header key to get the value of.
         :type key: str
         :return: the value as an integer
-        :rtype: str
+        :rtype: int
         :raises KeyError: if key doesn't exist
         :raises ValueError: if value cannot be converted to an integer.
         """
@@ -449,7 +452,7 @@ class DadaFile:
         :param key: the header key to get the value of.
         :type key: str
         :return: the value as a float
-        :rtype: str
+        :rtype: float
         :raises KeyError: if key doesn't exist
         :raises ValueError: if value cannot be converted to a float.
         """

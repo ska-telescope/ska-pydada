@@ -5,7 +5,7 @@
 # Distributed under the terms of the BSD 3-clause new license.
 # See LICENSE.txt for more info.
 
-"""This file fixtures for the unit tests."""
+"""This file provides fixtures for the unit tests."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ import pytest
 
 
 @pytest.fixture
-def temp_dada_file() -> Generator[IO[Any], None, None]:
+def temp_file() -> Generator[IO[Any], None, None]:
     """Get a temp DADA file."""
     yield NamedTemporaryFile()
 

@@ -11,17 +11,19 @@ from __future__ import annotations
 
 import pathlib
 import random
+from typing import IO, Any
 
 import pytest
 
 from ska_pydada import AsciiHeader
+from ska_pydada.ascii_header import MAX_ASCII_HEADER_SIZE
 
 
 def test_ascii_heaer_load_from_file(header_file: pathlib.Path) -> None:
     """Test loading an AsciiHeader from a file."""
     header = AsciiHeader.from_file(header_file)
 
-    assert len(header) == 8
+    assert len(header) == 9
 
     assert header.header_size == 16384
     assert header.get_int("HDR_SIZE") == 16384
@@ -32,6 +34,7 @@ def test_ascii_heaer_load_from_file(header_file: pathlib.Path) -> None:
     assert header.get_int("NPOL") == 2
     assert header.get_int("RESOLUTION") == 1327104
     assert header.get_value("UTC_START") == "2017-08-01-15:53:29"
+    assert header.get_value("TEST_SPACE") == "First"
 
 
 def test_ascii_header_set_value() -> None:
@@ -53,7 +56,7 @@ def test_ascii_header_from_bytes(header_file: pathlib.Path) -> None:
 
     header = AsciiHeader.from_bytes(data)
 
-    assert len(header) == 8
+    assert len(header) == 9
 
     assert header.header_size == 16384
     assert header.get_int("HDR_SIZE") == 16384
@@ -67,7 +70,7 @@ def test_ascii_header_from_bytes(header_file: pathlib.Path) -> None:
 
 
 def test_ascii_header_from_str(header_file: pathlib.Path) -> None:
-    """Test loading an AsciiHeader from bytes file."""
+    """Test loading an AsciiHeader from a string."""
     data = header_file.read_text()
 
     data += "# Adding a comment - next line is just whitespace\n"
@@ -75,7 +78,7 @@ def test_ascii_header_from_str(header_file: pathlib.Path) -> None:
 
     header = AsciiHeader.from_str(data)
 
-    assert len(header) == 8
+    assert len(header) == 9
 
     assert header.header_size == 16384
     assert header.get_int("HDR_SIZE") == 16384
@@ -161,3 +164,28 @@ VERY_LONG_KEY_NAME_OVER_20_CHARS 42
 
     null_padding = bytes(header_size - len(expected_str_bytes))
     assert header_bytes[len(expected_str_bytes) :] == null_padding
+
+
+def test_ascii_header_from_file_where_size_is_too_large(temp_file: IO[Any]) -> None:
+    """Test that an exception is raised if file was too large."""
+    bytes_dada = bytes(MAX_ASCII_HEADER_SIZE + 1)
+    with open(temp_file.name, "wb") as fd:
+        fd.write(bytes_dada)
+
+    with pytest.raises(AssertionError) as exc_info:
+        AsciiHeader.from_file(temp_file.name)
+
+    assert str(exc_info.value) == (
+        f"file {temp_file.name} in {MAX_ASCII_HEADER_SIZE + 1} bytes which is "
+        f"greater than max size of {MAX_ASCII_HEADER_SIZE}"
+    )
+
+
+def test_ascii_header_only_accepts_key_that_are_strings() -> None:
+    """Assert only str keys are accepted."""
+    header = AsciiHeader()
+
+    with pytest.raises(AssertionError) as exc_info:
+        header[123] = "foobar"
+
+    assert str(exc_info.value) == "AsciiHeader only accepts str keys."

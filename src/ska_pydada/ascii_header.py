@@ -30,6 +30,8 @@ from .common import (
     UDP_NSAMP,
 )
 
+MAX_ASCII_HEADER_SIZE: int = 128 * DEFAULT_HEADER_SIZE
+
 
 class AsciiHeader(OrderedDict):
     """A utility class to abstract over a DADA header.
@@ -68,7 +70,15 @@ class AsciiHeader(OrderedDict):
         :type file: pathlib.Path | str
         :return: the file parsed as an ``AsciiHeader``
         :rtype: AsciiHeader
+        :raises AssertionError: if file size is more than 512KB
+            in size.
         """
+        file = pathlib.Path(file)
+        file_size = file.stat().st_size
+        assert file_size <= MAX_ASCII_HEADER_SIZE, (
+            f"file {file} in {file_size} bytes which is greater than max size of" f" {MAX_ASCII_HEADER_SIZE}"
+        )
+
         with open(file, "r") as fd:
             data = fd.read()
             return AsciiHeader.from_str(data)
@@ -91,6 +101,10 @@ class AsciiHeader(OrderedDict):
     def from_str(data: str) -> AsciiHeader:
         """Get an instance of an ``AsciiHeader`` from supplied string.
 
+        Entries in the header file are delimited by a newline character,
+        and the header and value pair are in turn delimited by a white space
+        character.
+
         :param data: the data to parse.
         :type data: str
         :return: the string parsed as an ``AsciiHeader``
@@ -107,7 +121,7 @@ class AsciiHeader(OrderedDict):
             if len(line) == 0:
                 continue
 
-            [key, value] = line.lstrip().split(" ", maxsplit=1)
+            [key, value, *_] = line.lstrip().split()
             assert len(key) > 0, f"Expected header key of line '{line}' to not be empty"
             header[key] = value.lstrip()
 
@@ -124,6 +138,7 @@ class AsciiHeader(OrderedDict):
         :param __value: the value of the record to set
         :type __value: Any
         """
+        assert isinstance(__key, str), "AsciiHeader only accepts str keys."
         super().__setitem__(__key, str(__value))
 
     @property
@@ -201,8 +216,8 @@ class AsciiHeader(OrderedDict):
 
         :param key: the key of the record to get.
         :type key: str
-        :return: the value of the record as a string value.
-        :rtype: str
+        :return: the value of the record as a int value.
+        :rtype: int
         :raises KeyError: if key does not exist
         :raises ValueError: if value cannot be converted to an integer.
         """
@@ -214,8 +229,8 @@ class AsciiHeader(OrderedDict):
 
         :param key: the key of the record to get.
         :type key: str
-        :return: the value of the record as a string value.
-        :rtype: str
+        :return: the value of the record as a float value.
+        :rtype: float
         :raises KeyError: if key does not exist
         :raises ValueError: if value cannot be converted to a float.
         """
