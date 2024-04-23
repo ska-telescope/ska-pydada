@@ -25,11 +25,11 @@ sudo apt-get install pandoc graphviz
 No matter what environment that you use, you will need to make sure that Poetry is
 installed and that you have the Poetry shell running.
 
-Install Poetry based on [Poetry Docs](https://python-poetry.org/docs/). Ensure that you're using at least 1.3.2, as the
-`pyproject.toml` and `poetry.lock` files have been migrated to the Poetry 1.3.2.  The following command will install Poetry
-version 1.3.2
+Install Poetry based on [Poetry Docs](https://python-poetry.org/docs/). Ensure that you're using at least 1.8.2, as the
+`pyproject.toml` and `poetry.lock` files have been migrated to the Poetry 1.8.2.  The following command will install Poetry
+version 1.8.2
 
-    curl -sSL https://install.python-poetry.org | python3 - --version 1.3.2
+    curl -sSL https://install.python-poetry.org | python3 - --version 1.8.2
 
 After having Poetry installed, run the following command to be able to install the project. This will create a virtual env for you before starting.
 
