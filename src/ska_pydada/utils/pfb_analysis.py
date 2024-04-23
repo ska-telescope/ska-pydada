@@ -5,7 +5,7 @@
 # Distributed under the terms of the BSD 3-clause new license.
 # See LICENSE.txt for more info.
 
-"""Utility submodule for checking polyphase filter-bank (PBF) results."""
+"""Utility submodule for checking polyphase filter-bank (PFB) results."""
 
 from __future__ import annotations
 
@@ -80,7 +80,7 @@ class TemporalFidelityImpulseResult:
 
 @dataclasses.dataclass(kw_only=True, frozen=True)
 class TemporalFidelityResult:
-    """A dataclass to aggregate the overall result of checking the temporal fidelity of the PBF."""
+    """A dataclass to aggregate the overall result of checking the temporal fidelity of the PFB."""
 
     tsamp: float
     """
@@ -111,7 +111,7 @@ def generate_expected_max_power(
     nsamp: int,
     max_db_outside_env: float,
 ) -> Tuple[np.ndarray, Tuple[np.ndarray, ...], np.ndarray]:
-    """Generate the expected maximum relative power to use in temporal PBF fidelity.
+    """Generate the expected maximum relative power to use in temporal PFB fidelity.
 
     The method generates a Numpy array that contains the maximium power, in dB, that
     will be used in temporal analysis.  It also returns an index array that is used
@@ -154,7 +154,7 @@ def generate_expected_max_power(
     return power, nifft_mask, outside_env_mask
 
 
-def analyse_pfb_file_temporal_fidelity(
+def analyse_pfb_temporal_fidelity(
     file: str | pathlib.Path,
     # Ideally this should in in HEADER of output file
     env_slope_db: float,
@@ -163,7 +163,7 @@ def analyse_pfb_file_temporal_fidelity(
     num_impulses: int | None = None,
     expected_impulses: List[int] | None = None,
 ) -> TemporalFidelityResult:
-    """Analyse PBF output for temporal fidelity.
+    """Analyse PFB output for temporal fidelity.
 
     This method is used to analyse a DADA file that has data stored in
     temporal, frequency, polarisation format (TFP).
@@ -195,7 +195,7 @@ def analyse_pfb_file_temporal_fidelity(
     :raises AssertionError: either ``num_impulses`` and/or ``expected_impulses`` are set
         and the values are consistent with each other. Also the effective value of
         ``num_impulses`` must be greater than 0.
-    :return: the results of analysing the PBF inversion fidelity.
+    :return: the results of analysing the PFB inversion fidelity.
     :rtype: TemporalFidelityResult
     """
     if num_impulses is None:
@@ -208,10 +208,10 @@ def analyse_pfb_file_temporal_fidelity(
 
     assert num_impulses > 0, "expected at least 1 impulse to analyse"
 
-    dada_file = DadaFile.load_from_file(file=file)
+    file = pathlib.Path(file)
+    assert file.exists() and file.is_file(), f"expected {file} to exists and be a file not a directory"
 
-    if nifft is None:
-        nifft = dada_file.get_header_int("NIFFT")
+    dada_file = DadaFile.load_from_file(file=file)
 
     tfp_voltage_data = dada_file.as_time_freq_pol()
 
@@ -225,7 +225,7 @@ def analyse_pfb_file_temporal_fidelity(
     impulse_indices = np.sort(impulse_indices)
 
     if expected_impulses is None:
-        expected_impulses = [*impulse_indices[0]]
+        expected_impulses = [*impulse_indices]
 
     tsamp = dada_file.get_header_float("TSAMP")
 
