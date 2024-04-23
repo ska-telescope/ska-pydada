@@ -17,17 +17,18 @@ from ska_pydada.utils.pfb_analysis import analyse_pfb_temporal_fidelity
 
 @pytest.fixture
 def temporal_fidelity_pass_file(data_path: pathlib.Path) -> pathlib.Path:
+    """Get the test file that should pass temporal fidelity analysis."""
     return data_path / "temporal_fidelity_pass.dada"
 
 
 @pytest.fixture
 def temporal_fidelity_fail(data_path: pathlib.Path) -> pathlib.Path:
+    """Get the test file that should fail temporal fidelity analysis."""
     return data_path / "temporal_fidelity_fail.dada"
 
 
 def test_analyse_pfb_temporal_fidelity_assertions() -> None:
     """Test the assertions when calling analyse_pfb_temporal_fidelity."""
-
     with pytest.raises(AssertionError, match="either num_impulses and/or expected_impulses must be set"):
         analyse_pfb_temporal_fidelity(
             "anyfile.dada",

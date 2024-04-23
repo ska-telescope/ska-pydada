@@ -159,7 +159,7 @@ def analyse_pfb_temporal_fidelity(
     # Ideally this should in in HEADER of output file
     env_slope_db: float,
     env_halfwidth_us: float,
-    nifft: int | None = None,
+    nifft: int,
     num_impulses: int | None = None,
     expected_impulses: List[int] | None = None,
 ) -> TemporalFidelityResult:
@@ -180,10 +180,8 @@ def analyse_pfb_temporal_fidelity(
     :type env_slope_db: float
     :param env_halfwidth_us: the temporal halfwidth around the impulse, in microseconds.
     :type env_halfwidth_us: float
-    :param nifft: the number of elements used in the inverse fast Fourier transform,
-        defaults to None. If None is set it expects that the NIFFT header exists in
-        header of the DADA file.
-    :type nifft: int | None, optional
+    :param nifft: the number of elements used in the inverse fast Fourier transform.
+    :type nifft: int
     :param num_impulses: the number of impulses to analyse, defaults to None. If not
         set this value is the length of ``expected_impulses``. Either this and/or
         ``expected_impulses`` must be set.
