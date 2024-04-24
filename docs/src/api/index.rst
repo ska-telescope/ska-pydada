@@ -9,3 +9,4 @@ Python API
     :toctree: _autosummary/ska_pydada/ska_pydada
 
     ska_pydada
+    ska_pydada.utils.pfb_analysis

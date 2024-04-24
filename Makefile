@@ -8,7 +8,7 @@ include .make/python.mk
 # include your own private variables for custom deployment configuration
 -include PrivateRules.mak
 
-POETRY_VERSION ?=1.3.2
+POETRY_VERSION ?=1.8.2
 POETRY_CONFIG_VIRTUALENVS_CREATE=false
 
 PYTHON_LINE_LENGTH = 110
