@@ -35,6 +35,8 @@ def test_analyse_pfb_temporal_fidelity_assertions() -> None:
             env_slope_db=-4.0,
             env_halfwidth_us=15.0,
             nifft=196608,
+            max_db_outside_env=-60.0,
+            max_spurious_power_db=-50.0,
         )
 
     with pytest.raises(
@@ -45,6 +47,8 @@ def test_analyse_pfb_temporal_fidelity_assertions() -> None:
             env_slope_db=-4.0,
             env_halfwidth_us=15.0,
             nifft=196608,
+            max_db_outside_env=-60.0,
+            max_spurious_power_db=-50.0,
             num_impulses=1,
             expected_impulses=[1, 2],
         )
@@ -54,13 +58,21 @@ def test_analyse_pfb_temporal_fidelity_assertions() -> None:
             "anyfile.dada",
             env_slope_db=-4.0,
             env_halfwidth_us=15.0,
+            max_db_outside_env=-60.0,
+            max_spurious_power_db=-50.0,
             nifft=196608,
             num_impulses=0,
         )
 
     with pytest.raises(AssertionError, match="expected at least 1 impulse to analyse"):
         analyse_pfb_temporal_fidelity(
-            "anyfile.dada", env_slope_db=-4.0, env_halfwidth_us=15.0, nifft=196608, expected_impulses=[]
+            "anyfile.dada",
+            env_slope_db=-4.0,
+            env_halfwidth_us=15.0,
+            nifft=196608,
+            max_db_outside_env=-60.0,
+            max_spurious_power_db=-50.0,
+            expected_impulses=[],
         )
 
     with pytest.raises(AssertionError, match="expected anyfile.dada to exists and be a file not a directory"):
@@ -69,6 +81,8 @@ def test_analyse_pfb_temporal_fidelity_assertions() -> None:
             env_slope_db=-4.0,
             env_halfwidth_us=15.0,
             nifft=196608,
+            max_db_outside_env=-60.0,
+            max_spurious_power_db=-50.0,
             num_impulses=1,
             expected_impulses=[1],
         )
@@ -83,6 +97,8 @@ def test_analyse_pfb_temporal_fidelity_passes(temporal_fidelity_pass_file: pathl
         env_slope_db=-4.0,
         env_halfwidth_us=15.0,
         nifft=196608,
+        max_db_outside_env=-60.0,
+        max_spurious_power_db=-50.0,
         num_impulses=2,
     )
 
@@ -114,6 +130,8 @@ def test_analyse_pfb_temporal_fidelity_fails_when_expected_impulses_are_incorrec
         env_slope_db=-4.0,
         env_halfwidth_us=15.0,
         nifft=196608,
+        max_db_outside_env=-60.0,
+        max_spurious_power_db=-50.0,
         num_impulses=2,
         expected_impulses=[1537, 173663],
     )
@@ -140,6 +158,8 @@ def test_analyse_pfb_temporal_fidelity_fails(temporal_fidelity_fail: pathlib.Pat
         temporal_fidelity_fail,
         env_slope_db=-4.0,
         env_halfwidth_us=15.0,
+        max_db_outside_env=-60.0,
+        max_spurious_power_db=-50.0,
         nifft=196608,
         num_impulses=2,
     )

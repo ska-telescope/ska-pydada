@@ -17,6 +17,9 @@ import numpy as np
 
 from ska_pydada import DadaFile
 
+NEG_100_DB: float = -100.0
+POWER_NEG_100_DB: float = 1e-10  # this is pow(10, NEG_100_DB/10)
+
 
 @dataclasses.dataclass(kw_only=True, frozen=True)
 class TemporalFidelityImpulseResult:
@@ -101,6 +104,10 @@ class TemporalFidelityResult:
     """A list of results for each individual impulse found in the file."""
 
 
+def _power_as_db(power: np.ndarray | float) -> np.ndarray:
+    return 10.0 * np.log10(power)
+
+
 def generate_expected_max_power(
     *,
     env_slope_db: float,
@@ -159,6 +166,8 @@ def analyse_pfb_temporal_fidelity(
     # Ideally this should in in HEADER of output file
     env_slope_db: float,
     env_halfwidth_us: float,
+    max_db_outside_env: float,
+    max_spurious_power_db: float,
     nifft: int,
     num_impulses: int | None = None,
     expected_impulses: List[int] | None = None,
@@ -180,6 +189,12 @@ def analyse_pfb_temporal_fidelity(
     :type env_slope_db: float
     :param env_halfwidth_us: the temporal halfwidth around the impulse, in microseconds.
     :type env_halfwidth_us: float
+    :param max_db_outside_env: the maximum amount of relative power, in decibels, allowed
+        outside of the allowed envelope
+    :type max_db_outside_env: float
+    :param max_spurious_power_db: the maximum total spurious power integrated outside of the
+        allowed envelope, in decibels.
+    :type max_spurious_power_db: float
     :param nifft: the number of elements used in the inverse fast Fourier transform.
     :type nifft: int
     :param num_impulses: the number of impulses to analyse, defaults to None. If not
@@ -235,21 +250,21 @@ def analyse_pfb_temporal_fidelity(
             impulse_idx=impulse_idx,
             tsamp=tsamp,
             nsamp=len(tfp_voltage_data),
-            max_db_outside_env=-60.0,
+            max_db_outside_env=max_db_outside_env,
         )
 
         expected_impulse_idx = expected_impulses[nth_pulse]
         valid_impulse_position = expected_impulse_idx == impulse_idx
 
         expected_max_power = expected_max_power[data_mask]
-        expected_max_power_db = 10.0 * np.log10(expected_max_power)
+        expected_max_power_db = _power_as_db(expected_max_power)
 
         signal_power_full = tfp_power / tfp_power[impulse_idx]
         signal_power = signal_power_full[data_mask]
 
         # ensure we don't end up with a Numpy warning of divide by zero
-        signal_power[signal_power < 1e-10] = 1e-10
-        signal_power_db = 10.0 * np.log10(signal_power)
+        signal_power[signal_power < POWER_NEG_100_DB] = POWER_NEG_100_DB
+        signal_power_db = _power_as_db(signal_power)
 
         # the IDX is a tuple
         max_power_result_idx = np.where(signal_power > expected_max_power)[0]
@@ -258,8 +273,8 @@ def analyse_pfb_temporal_fidelity(
         max_power_result = not np.any(max_power_result_idx)
 
         total_spurious_power = np.sum(signal_power_full[spurious_power_mask])
-        total_spurious_power_db = 10.0 * np.log10(total_spurious_power)
-        total_spurious_power_result = total_spurious_power_db <= -50.0
+        total_spurious_power_db = float(_power_as_db(total_spurious_power))
+        total_spurious_power_result = total_spurious_power_db <= max_spurious_power_db
 
         return TemporalFidelityImpulseResult(
             impulse_idx=impulse_idx,
