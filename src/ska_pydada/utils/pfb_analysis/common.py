@@ -7,6 +7,8 @@
 
 """Common code used for both spectoral and temporal fidelity."""
 
+from typing import Union
+
 import numpy as np
 
 NEG_100_DB: float = -100.0
@@ -16,14 +18,14 @@ POWER_NEG_100_DB: float = 1e-10  # this is pow(10, NEG_100_DB/10)
 """Constant presenting -100 dB but as relative power not in dB."""
 
 
-def power_as_db(power: np.ndarray | float) -> np.ndarray:
+def power_as_db(power: Union[np.ndarray, float]) -> np.ndarray:
     """Convert a Numpy array or float from relative power to a decibel (dB) value.
 
     Note: as this uses ``np.log10`` it will return a Numpy array even
     if the value was a singular float value.
 
     :param power: a Numpy array or float that is the relative power.
-    :type power: np.ndarray | float
+    :type power: Union[np.ndarray, float]
     :return: an array of values that is the power in decibels.
     :rtype: np.ndarray
     """

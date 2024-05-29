@@ -18,13 +18,13 @@ from ska_pydada.utils.pfb_analysis import analyse_pfb_temporal_fidelity
 @pytest.fixture
 def temporal_fidelity_pass_file(data_path: pathlib.Path) -> pathlib.Path:
     """Get the test file that should pass temporal fidelity analysis."""
-    return data_path / "temporal_fidelity_pass.dada"
+    return data_path / "dada" / "temporal_fidelity_pass.dada"
 
 
 @pytest.fixture
 def temporal_fidelity_fail(data_path: pathlib.Path) -> pathlib.Path:
     """Get the test file that should fail temporal fidelity analysis."""
-    return data_path / "temporal_fidelity_fail.dada"
+    return data_path / "dada" / "temporal_fidelity_fail.dada"
 
 
 def test_analyse_pfb_temporal_fidelity_assertions() -> None:

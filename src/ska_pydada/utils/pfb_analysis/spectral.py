@@ -12,14 +12,14 @@ from __future__ import annotations
 import dataclasses
 import logging
 import pathlib
-from typing import List, Tuple, Sequence
+from typing import List, Sequence, Tuple
 
 import numpy as np
 from scipy.fft import fft, fftshift
 
 from ska_pydada import DadaFile
 
-from .common import power_as_db, POWER_NEG_100_DB
+from .common import POWER_NEG_100_DB, power_as_db
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -159,9 +159,9 @@ def analyse_pfb_spectral_fidelity(
     tfp_voltage_data = tfp_voltage_data.flatten()
 
     if isinstance(expected_impulses[0], int):
-        _expected_impulses: List[Tuple[int, int]] = list(enumerate(expected_impulses)) # type: ignore
+        _expected_impulses: List[Tuple[int, int]] = list(enumerate(expected_impulses))  # type: ignore
     else:
-        _expected_impulses: List[Tuple[int, int]] = expected_impulses # type: ignore
+        _expected_impulses: List[Tuple[int, int]] = expected_impulses  # type: ignore
 
     def calc_results(test_idx: int, expected_frequency_bin_idx: int) -> SpectralFidelityImpulseResult:
         start_idx = test_idx * t_test
