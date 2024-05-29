@@ -71,6 +71,9 @@ class SpectralFidelityToneResult:
     """
     An indicator of the overall result for the tone.
 
+    If the value is ``True`` then the test for the tone passes. If the value is ``False`` then
+    the test failed.
+
     This is equivalent of the following:
 
     .. code-block:: python
@@ -120,11 +123,10 @@ def analyse_pfb_spectral_fidelity(
 
         * Assumes that NCHAN = 1
         * Assumes that NPOL = 1
-        * Assumes all the data is within the first chunk of the DADA file
 
     The ``expected_tones`` can either be a list of integers which is the frequency
     channel bin the tone should be in or a list of tuples where the first value is
-    the index of the test sample and the second value is the frequency channel bin the
+    the test sample block index and the second value is the frequency channel bin the
     tone should be in.
 
     The first form is simple and if there are multiple values this function will
@@ -137,7 +139,9 @@ def analyse_pfb_spectral_fidelity(
     :param t_test: the number of time samples that the test covers.
         This needs to be greater than ``t_ifft`` to avoid Gibbs effects in the expected pulses.
     :type t_test: int
-    :param t_ifft: the number of elements used in the inverse fast Fourier transform.
+    :param the number of elements in the inverse Fast Fourier Transform (FFT) performed during
+        PFB inversion, which is equal to the number of elements in the forward FFTs performed
+        on each test sample block.
     :type t_ifft: int
     :param expected_tones: a sequence of zero offset indices that the expected pulse is at,
         defaults to None.
