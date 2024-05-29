@@ -17,8 +17,8 @@ from ska_pydada.utils.pfb_analysis import analyse_pfb_spectral_fidelity
 
 
 @pytest.fixture
-def expected_impulses() -> List[int]:
-    """Get a list of channel indices of where impulses are expected."""
+def expected_tones() -> List[int]:
+    """Get a list of channel indices of where tones are expected."""
     return [82944, 165240, 82296]
 
 
@@ -36,24 +36,24 @@ def spectral_fidelity_fail_file(data_path: pathlib.Path) -> pathlib.Path:
 
 def test_analyse_pfb_spectral_fidelity_assertions(spectral_fidelity_pass_file: pathlib.Path) -> None:
     """Test the assertions when calling analyse_pfb_spectral_fidelity."""
-    with pytest.raises(AssertionError, match="expected at least 1 impulse to analyse"):
+    with pytest.raises(AssertionError, match="expected at least 1 tone to analyse"):
         analyse_pfb_spectral_fidelity(
             "anyfile.dada",
             t_test=290304,
             t_ifft=165888,
             max_power_db=-60.0,
             max_total_spectral_confusion_power_db=-50.0,
-            expected_impulses=[],
+            expected_tones=[],
         )
 
-    with pytest.raises(AssertionError, match="expected anyfile.dada to exists and be a file not a directory"):
+    with pytest.raises(AssertionError, match="expected anyfile.dada to exist and be a file not a directory"):
         analyse_pfb_spectral_fidelity(
             "anyfile.dada",
             t_test=290304,
             t_ifft=165888,
             max_power_db=-60.0,
             max_total_spectral_confusion_power_db=-50.0,
-            expected_impulses=[82944],
+            expected_tones=[82944],
         )
 
     with pytest.raises(
@@ -65,23 +65,23 @@ def test_analyse_pfb_spectral_fidelity_assertions(spectral_fidelity_pass_file: p
             t_ifft=165888,
             max_power_db=-60.0,
             max_total_spectral_confusion_power_db=-50.0,
-            expected_impulses=[(5, 82944)],
+            expected_tones=[(5, 82944)],
         )
 
 
 @pytest.mark.skip("Currently PFB inversion is failing spectral fidelity")
 def test_analyse_pfb_spectral_fidelity_passes(
     spectral_fidelity_fail_file: pathlib.Path,
-    expected_impulses: List[int],
+    expected_tones: List[int],
 ) -> None:
-    """Test that a valid PFB inversion passes analysis."""
+    """Test that a valid PFB inverted file passes spectral fidelity analysis."""
     result = analyse_pfb_spectral_fidelity(
         file=spectral_fidelity_fail_file,
         t_test=290304,
         t_ifft=165888,
         max_power_db=-60.0,
         max_total_spectral_confusion_power_db=-50.0,
-        expected_impulses=expected_impulses,
+        expected_tones=expected_tones,
     )
 
     dada_file = DadaFile.load_from_file(spectral_fidelity_fail_file)
@@ -89,9 +89,9 @@ def test_analyse_pfb_spectral_fidelity_passes(
     assert result.overall_result, "expected overall result to be True"
 
     assert dada_file.get_header_float("TSAMP") == result.tsamp
-    assert len(result.impulse_results) == len(expected_impulses)
+    assert len(result.tone_results) == len(expected_tones)
 
-    for expected_frequency_bin_idx, r in zip(expected_impulses, result.impulse_results):
+    for expected_frequency_bin_idx, r in zip(expected_tones, result.tone_results):
         assert r.expected_frequency_bin_idx == expected_frequency_bin_idx
         assert r.frequency_bin_idx == expected_frequency_bin_idx
         assert r.valid_frequency_bin
@@ -103,16 +103,16 @@ def test_analyse_pfb_spectral_fidelity_passes(
 
 def test_analyse_pfb_spectral_fidelity_fails(
     spectral_fidelity_fail_file: pathlib.Path,
-    expected_impulses: List[int],
+    expected_tones: List[int],
 ) -> None:
-    """Test that a valid PFB inversion passes analysis."""
+    """Test that an invalid PFB inverted file fails spectral fidelity analysis."""
     result = analyse_pfb_spectral_fidelity(
         file=spectral_fidelity_fail_file,
         t_test=290304,
         t_ifft=165888,
         max_power_db=-60.0,
         max_total_spectral_confusion_power_db=-50.0,
-        expected_impulses=expected_impulses,
+        expected_tones=expected_tones,
     )
 
     dada_file = DadaFile.load_from_file(spectral_fidelity_fail_file)
@@ -120,9 +120,9 @@ def test_analyse_pfb_spectral_fidelity_fails(
     assert not result.overall_result, "expected file to fail spectral fidelity analysis"
 
     assert dada_file.get_header_float("TSAMP") == result.tsamp
-    assert len(result.impulse_results) == len(expected_impulses)
+    assert len(result.tone_results) == len(expected_tones)
 
-    for expected_frequency_bin_idx, r in zip(expected_impulses, result.impulse_results):
+    for expected_frequency_bin_idx, r in zip(expected_tones, result.tone_results):
         assert r.expected_frequency_bin_idx == expected_frequency_bin_idx
         assert r.frequency_bin_idx == expected_frequency_bin_idx
         assert r.valid_frequency_bin

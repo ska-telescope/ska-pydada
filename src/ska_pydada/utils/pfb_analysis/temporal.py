@@ -176,7 +176,7 @@ def analyse_pfb_temporal_fidelity(
 
         * Assumes that NCHAN = 1
         * Assumes that NPOL = 1
-        * Assumes all the data is within the first chunck of data of a ``DadaFile``
+        * Assumes all the data is within the first chunk of data of a ``DadaFile``
 
     :param file: the location of the file to load and analyse.
     :type file: str | pathlib.Path

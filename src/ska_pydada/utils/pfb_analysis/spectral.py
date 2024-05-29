@@ -25,35 +25,35 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 @dataclasses.dataclass(kw_only=True, frozen=True)
-class SpectralFidelityImpulseResult:
+class SpectralFidelityToneResult:
     """
-    A data class representing the result of checking an impulse against the expected fidelity.
+    A data class representing the result of checking a tone against the expected fidelity.
 
-    All the power data reported in this class is from the frequency domain after apply a
+    All the power data reported in this class is from the frequency domain after applying a
     fast Fourier transform (FFT) on the input data.
     """
 
     time_sample_start_idx: int
     """
-    The starting time bin index used for checking this impulse.
+    The starting time bin index used for checking this tone.
 
-    This is ``test impulse number * T_TEST``
+    This is ``test tone number * T_TEST``
     """
 
     frequency_bin_idx: int
-    """The frequency bin index of where the impulse is found in the FFT of the time sample."""
+    """The frequency bin index of where the tone is found in the spectrum."""
 
     expected_frequency_bin_idx: int
-    """The expected frequency bin index of where the impulse is the FFT of the time sample."""
+    """The expected frequency bin index of where the tone is found in the spectrum."""
 
     valid_frequency_bin: bool
     """An indicator of whether the ``frequency_bin_idx`` equals ``expected_frequency_bin_idx``."""
 
     signal_power: np.ndarray = dataclasses.field(repr=False)
-    """A Numpy array of the relative signal power used to calculated results."""
+    """A Numpy array of the relative signal power used to calculate results."""
 
     signal_power_db: np.ndarray = dataclasses.field(repr=False)
-    """A Numpy array of the relative signal power, in decibels, used to calculated results."""
+    """A Numpy array of the relative signal power, in decibels, used to calculate results."""
 
     max_spectral_confusion_result: bool
     """An indicator of whether all of the ``signal_power_db`` is less than expected maximum."""
@@ -69,7 +69,7 @@ class SpectralFidelityImpulseResult:
 
     overall_result: bool
     """
-    An indicator of the overall result for the impulse.
+    An indicator of the overall result for the tone.
 
     This is equivalent of the following:
 
@@ -93,39 +93,39 @@ class SpectralFidelityResult:
 
     overall_result: bool
     """
-    The overall result of the analysis of all impulses.
+    The overall result of the analysis of all tones.
 
-    If any result for any impulse is ``False`` then this value is ``False``, that is all impulses
+    If any result for any tone is ``False`` then this value is ``False``, that is all tones
     must be valid for the overall result to be valid.
     """
 
-    impulse_results: List[SpectralFidelityImpulseResult]
-    """A list of results for each individual impulse found in the file."""
+    tone_results: List[SpectralFidelityToneResult]
+    """A list of results for each individual tone found in the file."""
 
 
 def analyse_pfb_spectral_fidelity(
     file: str | pathlib.Path,
     t_test: int,
     t_ifft: int,
-    expected_impulses: Sequence[int | Tuple[int, int]],
+    expected_tones: Sequence[int | Tuple[int, int]],
     max_power_db: float = -60.0,
     max_total_spectral_confusion_power_db: float = -50.0,
 ) -> SpectralFidelityResult:
     """Analyse PFB output for spectral fidelity.
 
     This method is used to analyse a DADA file that has data stored in
-    temporal, frequency, polarisation format (TFP).
+    time, frequency, polarisation format (TFP).
 
     Current limitations of this method are:
 
         * Assumes that NCHAN = 1
         * Assumes that NPOL = 1
-        * Assumes all the data is within the first chunck of data of a ``DadaFile``
+        * Assumes all the data is within the first chunk of the DADA file
 
-    The ``expected_impulses`` can either be a list of integers which is the frequency
-    channel bin is the impulse should be in or a list of tuples where the first value is
+    The ``expected_tones`` can either be a list of integers which is the frequency
+    channel bin the tone should be in or a list of tuples where the first value is
     the index of the test sample and the second value is the frequency channel bin the
-    impulse should be in.
+    tone should be in.
 
     The first form is simple and if there are multiple values this function will
     assume that the index in the list is the index of test case (using zero offset).
@@ -139,17 +139,16 @@ def analyse_pfb_spectral_fidelity(
     :type t_test: int
     :param t_ifft: the number of elements used in the inverse fast Fourier transform.
     :type t_ifft: int
-    :param expected_impulses: a sequence of zero offset indices that the expected pulse is at,
-        defaults to None.  If None then the method will find the ``num_impulses`` highest
-        values of power. Either this and/or ``num_impulses`` must be set.
-    :type expected_impulses: Sequence[int | Tuple[int, int]]
+    :param expected_tones: a sequence of zero offset indices that the expected pulse is at,
+        defaults to None.
+    :type expected_tones: Sequence[int | Tuple[int, int]]
     :return: the results of analysing the PFB inversion fidelity.
     :rtype: SpectralFidelityResult
     """
-    assert len(expected_impulses) > 0, "expected at least 1 impulse to analyse"
+    assert len(expected_tones) > 0, "expected at least 1 tone to analyse"
 
     file = pathlib.Path(file)
-    assert file.exists() and file.is_file(), f"expected {file} to exists and be a file not a directory"
+    assert file.exists() and file.is_file(), f"expected {file} to exist and be a file not a directory"
 
     dada_file = DadaFile.load_from_file(file=file, chunk_size=-1)
 
@@ -158,12 +157,12 @@ def analyse_pfb_spectral_fidelity(
     # at the moment we only handle NCHAN = 1, NPOL = 1
     tfp_voltage_data = tfp_voltage_data.flatten()
 
-    if isinstance(expected_impulses[0], int):
-        _expected_impulses: List[Tuple[int, int]] = list(enumerate(expected_impulses))  # type: ignore
+    if isinstance(expected_tones[0], int):
+        _expected_tones: List[Tuple[int, int]] = list(enumerate(expected_tones))  # type: ignore
     else:
-        _expected_impulses: List[Tuple[int, int]] = expected_impulses  # type: ignore
+        _expected_tones: List[Tuple[int, int]] = expected_tones  # type: ignore
 
-    def calc_results(test_idx: int, expected_frequency_bin_idx: int) -> SpectralFidelityImpulseResult:
+    def calc_results(test_idx: int, expected_frequency_bin_idx: int) -> SpectralFidelityToneResult:
         start_idx = test_idx * t_test
         end_idx = start_idx + t_ifft
 
@@ -206,7 +205,7 @@ def analyse_pfb_spectral_fidelity(
             valid_frequency_bin and max_spectral_confusion_result and total_spectral_confusion_power_result
         )
 
-        return SpectralFidelityImpulseResult(
+        return SpectralFidelityToneResult(
             time_sample_start_idx=start_idx,
             frequency_bin_idx=frequency_bin_idx,
             expected_frequency_bin_idx=expected_frequency_bin_idx,
@@ -220,14 +219,14 @@ def analyse_pfb_spectral_fidelity(
             overall_result=overall_result,
         )
 
-    impulse_results = [calc_results(test_idx, k_idx) for (test_idx, k_idx) in _expected_impulses]
+    tone_results = [calc_results(test_idx, k_idx) for (test_idx, k_idx) in _expected_tones]
     overall_result = True
-    for r in impulse_results:
+    for r in tone_results:
         overall_result &= r.overall_result
 
     tsamp = dada_file.get_header_float("TSAMP")
     return SpectralFidelityResult(
         tsamp=tsamp,
         overall_result=overall_result,
-        impulse_results=impulse_results,
+        tone_results=tone_results,
     )

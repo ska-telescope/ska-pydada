@@ -12,7 +12,7 @@ __all__ = [
     "POWER_NEG_100_DB",
     "TemporalFidelityImpulseResult",
     "TemporalFidelityResult",
-    "SpectralFidelityImpulseResult",
+    "SpectralFidelityToneResult",
     "SpectralFidelityResult",
     "analyse_pfb_temporal_fidelity",
     "analyse_pfb_spectral_fidelity",
@@ -21,4 +21,4 @@ __all__ = [
 
 from .common import NEG_100_DB, POWER_NEG_100_DB, power_as_db
 from .temporal import analyse_pfb_temporal_fidelity, TemporalFidelityImpulseResult, TemporalFidelityResult
-from .spectral import analyse_pfb_spectral_fidelity, SpectralFidelityImpulseResult, SpectralFidelityResult
+from .spectral import analyse_pfb_spectral_fidelity, SpectralFidelityToneResult, SpectralFidelityResult
