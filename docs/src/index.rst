@@ -39,4 +39,5 @@
   :caption: Notebooks
 
   ../../notebooks/example_usage
-
+  ../../notebooks/pfb-inversion-spectral-fidelity
+  ../../notebooks/pfb-inversion-temporal-fidelity

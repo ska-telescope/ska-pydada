@@ -92,6 +92,7 @@ todo_include_todos = True
 autodoc_mock_imports = [
     "numpy",
     "nptyping",
+    "scipy",
 ]
 
 # -- Options for HTML output ----------------------------------------------

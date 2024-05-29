@@ -35,7 +35,7 @@ MEGABYTE: int = 1024 * 1024
 
 # 4MB
 DEFAULT_DATA_CHUNK_SIZE: int = 4 * MEGABYTE
-"""Default size of a chunck of data to read."""
+"""Default size of a chunk of data to read."""
 
 # DADA Header keys
 HEADER_SIZE_KEY: str = "HDR_SIZE"

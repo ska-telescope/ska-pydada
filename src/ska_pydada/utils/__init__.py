@@ -6,3 +6,27 @@
 # See LICENSE.txt for more info.
 
 """Module for utilities working with the DADA files."""
+
+__all__ = [
+    "NEG_100_DB",
+    "POWER_NEG_100_DB",
+    "TemporalFidelityImpulseResult",
+    "TemporalFidelityResult",
+    "SpectralFidelityToneResult",
+    "SpectralFidelityResult",
+    "analyse_pfb_temporal_fidelity",
+    "analyse_pfb_spectral_fidelity",
+    "power_as_db",
+]
+
+from .pfb_analysis import (
+    NEG_100_DB,
+    POWER_NEG_100_DB,
+    power_as_db,
+    TemporalFidelityImpulseResult,
+    TemporalFidelityResult,
+    SpectralFidelityToneResult,
+    SpectralFidelityResult,
+    analyse_pfb_temporal_fidelity,
+    analyse_pfb_spectral_fidelity,
+)
