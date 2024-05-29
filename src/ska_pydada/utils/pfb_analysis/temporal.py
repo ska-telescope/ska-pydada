@@ -5,7 +5,7 @@
 # Distributed under the terms of the BSD 3-clause new license.
 # See LICENSE.txt for more info.
 
-"""Utility submodule for checking polyphase filter-bank (PFB) results."""
+"""Utility submodule for checking polyphase filter-bank (PFB) temporal fidelity."""
 
 from __future__ import annotations
 
@@ -17,8 +17,7 @@ import numpy as np
 
 from ska_pydada import DadaFile
 
-NEG_100_DB: float = -100.0
-POWER_NEG_100_DB: float = 1e-10  # this is pow(10, NEG_100_DB/10)
+from .common import POWER_NEG_100_DB, power_as_db
 
 
 @dataclasses.dataclass(kw_only=True, frozen=True)
@@ -102,10 +101,6 @@ class TemporalFidelityResult:
 
     impulse_results: List[TemporalFidelityImpulseResult]
     """A list of results for each individual impulse found in the file."""
-
-
-def _power_as_db(power: np.ndarray | float) -> np.ndarray:
-    return 10.0 * np.log10(power)
 
 
 def generate_expected_max_power(
@@ -224,7 +219,7 @@ def analyse_pfb_temporal_fidelity(
     file = pathlib.Path(file)
     assert file.exists() and file.is_file(), f"expected {file} to exists and be a file not a directory"
 
-    dada_file = DadaFile.load_from_file(file=file)
+    dada_file = DadaFile.load_from_file(file=file, chunk_size=-1)
 
     tfp_voltage_data = dada_file.as_time_freq_pol()
 
@@ -257,14 +252,14 @@ def analyse_pfb_temporal_fidelity(
         valid_impulse_position = expected_impulse_idx == impulse_idx
 
         expected_max_power = expected_max_power[data_mask]
-        expected_max_power_db = _power_as_db(expected_max_power)
+        expected_max_power_db = power_as_db(expected_max_power)
 
         signal_power_full = tfp_power / tfp_power[impulse_idx]
         signal_power = signal_power_full[data_mask]
 
         # ensure we don't end up with a Numpy warning of divide by zero
         signal_power[signal_power < POWER_NEG_100_DB] = POWER_NEG_100_DB
-        signal_power_db = _power_as_db(signal_power)
+        signal_power_db = power_as_db(signal_power)
 
         # the IDX is a tuple
         max_power_result_idx = np.where(signal_power > expected_max_power)[0]
@@ -273,7 +268,7 @@ def analyse_pfb_temporal_fidelity(
         max_power_result = not np.any(max_power_result_idx)
 
         total_spurious_power = np.sum(signal_power_full[spurious_power_mask])
-        total_spurious_power_db = float(_power_as_db(total_spurious_power))
+        total_spurious_power_db = float(power_as_db(total_spurious_power))
         total_spurious_power_result = total_spurious_power_db <= max_spurious_power_db
 
         return TemporalFidelityImpulseResult(

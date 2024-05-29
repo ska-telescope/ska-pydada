@@ -123,11 +123,13 @@ class DadaFile:
         :return: the amount of data loaded.
         :rtype: int
         """
-        self._logger.debug(f"requested to load {chunk_size} bytes of data")
         assert self._file is not None, "can only load more data if created from a file"
-
         file_size = self._file.stat().st_size
 
+        if chunk_size < 0:
+            chunk_size = file_size - self.header_size
+
+        self._logger.debug(f"requested to load {chunk_size} bytes of data")
         resolution = self.resolution
         chunk_size = max(resolution, chunk_size)
 
