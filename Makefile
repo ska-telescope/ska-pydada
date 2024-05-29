@@ -17,6 +17,8 @@ PYTHON_SWITCHES_FOR_FLAKE8 := --extend-ignore=BLK,T --enable=DAR104 --ignore=E20
     --rst-roles=py:attr,py:class,py:const,py:exc,py:func,py:meth,py:mod \
 		--rst-directives=deprecated,uml
 
+PYTHON_TEST_FOLDER_NBMAKE=notebooks
+
 ifeq ($(findstring notebook, $(MAKECMDGOALS)),notebook)
 	PYTHON_LINT_TARGET=$(NOTEBOOK_LINT_TARGET)
 	PYTHON_SWITCHES_FOR_FLAKE8 := --extend-ignore=BLK,T --enable=DAR104 --ignore=E203,FS003,W503,N802,D100,D103 --max-complexity=10
