@@ -139,7 +139,7 @@ def analyse_pfb_spectral_fidelity(
     :param t_test: the number of time samples that the test covers.
         This needs to be greater than ``t_ifft`` to avoid Gibbs effects in the expected pulses.
     :type t_test: int
-    :param the number of elements in the inverse Fast Fourier Transform (FFT) performed during
+    :param t_ifft: the number of elements in the inverse Fast Fourier Transform (FFT) performed during
         PFB inversion, which is equal to the number of elements in the forward FFTs performed
         on each test sample block.
     :type t_ifft: int
