@@ -12,8 +12,13 @@ __all__ = [
     "AsciiHeader",
     "DadaFile",
     "DEFAULT_HEADER_SIZE",
+    "Unpacker",
+    "UnpackOptions",
+    "SkaUnpacker",
+    "SKA_DIGI_SCALE_MEAN",
 ]
 
 from .ascii_header import AsciiHeader
 from .dada_file import DadaFile
 from .common import DEFAULT_HEADER_SIZE
+from .unpacker import Unpacker, UnpackOptions, SkaUnpacker, SKA_DIGI_SCALE_MEAN

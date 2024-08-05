@@ -10,7 +10,8 @@
 from __future__ import annotations
 
 import pathlib
-from typing import IO, Any
+from typing import IO, Any, cast
+from unittest.mock import MagicMock
 
 import numpy as np
 import numpy.typing as npt
@@ -18,6 +19,7 @@ import pytest
 
 from ska_pydada import AsciiHeader, DadaFile
 from ska_pydada.common import DEFAULT_DATA_CHUNK_SIZE
+from ska_pydada.unpacker import UnpackOptions
 
 
 def test_dada_file_create() -> None:
@@ -205,3 +207,62 @@ def test_dada_file_data_formats(
         expected_out = expected_out.reshape(shape)
 
     np.testing.assert_allclose(data_out, expected_out)
+
+
+def test_dada_file_unpack_tfp() -> None:
+    """Test that unpack calls the unpacker with given options."""
+    file_data = np.random.randn(1000).astype(np.float32)
+
+    file = DadaFile()
+    file.set_data(file_data)
+
+    options = MagicMock()
+    options.ndim = 2
+    unpacker = MagicMock()
+
+    file.unpack_tfp(unpacker=unpacker, options=options)
+
+    cast(MagicMock, unpacker.unpack).assert_called_once_with(data=file_data.tobytes(), options=options)
+
+
+def test_dada_file_unpack_tfp_with_invalid_ndim() -> None:
+    """Test that unpack_tfp calls the unpacker with given options."""
+    file_data = np.random.randn(1000).astype(np.float32)
+
+    file = DadaFile()
+    file.set_data(file_data)
+
+    ndim = np.random.randint(3, 100)
+    options = MagicMock()
+    options.ndim = ndim
+    unpacker = MagicMock()
+
+    with pytest.raises(
+        AssertionError,
+        match=f"unpack_tfp currently on supports real or complex valued data. options.ndim={ndim}",
+    ):
+        file.unpack_tfp(unpacker=unpacker, options=options)
+
+
+def test_dada_file_unpack_tfp_with_no_options() -> None:
+    """Test that unpack_tfp provides a default unpack options."""
+    nbit = 8
+    npol = 1
+    nchan = 3
+    ndim = 2
+
+    file_data = np.random.randn(1000).astype(np.float32)
+
+    file = DadaFile()
+    file.set_header_value("NBIT", nbit)
+    file.set_header_value("NDIM", ndim)
+    file.set_header_value("NCHAN", nchan)
+    file.set_header_value("NPOL", npol)
+    file.set_data(file_data)
+
+    options = UnpackOptions(nbit=nbit, nchan=nchan, npol=npol, ndim=ndim)
+    unpacker = MagicMock()
+
+    file.unpack_tfp(unpacker=unpacker)
+
+    cast(MagicMock, unpacker.unpack).assert_called_once_with(data=file_data.tobytes(), options=options)

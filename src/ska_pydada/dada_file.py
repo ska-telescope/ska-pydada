@@ -22,6 +22,7 @@ import numpy.typing as npt
 
 from .ascii_header import AsciiHeader
 from .common import DEFAULT_DATA_CHUNK_SIZE, DEFAULT_HEADER_SIZE, SIZE_OF_COMPLEX64, SIZE_OF_FLOAT32
+from .unpacker import Unpacker, UnpackOptions
 
 
 class DadaFile:
@@ -398,7 +399,7 @@ class DadaFile:
         nchan = self.header.get_int("NCHAN")
         ndim = self.header.get_int("NDIM")
 
-        assert ndim in {1, 2}, f"currently on supports real or complex valued data. ndim={ndim}"
+        assert ndim in {1, 2}, f"currently on supports real or complex valued data. {ndim=}"
 
         if ndim == 2:
             assert self.data_size % (npol * nchan * SIZE_OF_COMPLEX64) == 0, (
@@ -459,3 +460,32 @@ class DadaFile:
         :raises ValueError: if value cannot be converted to a float.
         """
         return self.header.get_float(key)
+
+    def unpack_tfp(self: DadaFile, unpacker: Unpacker, options: UnpackOptions | None = None) -> np.ndarray:
+        """
+        Unpack the raw data using a specified unpacker and options.
+
+        If no unpack options are used a default options is created based of the ``AsciiHeader`` of the
+        current DADA file.
+
+        :param unpacker: the specific unpacker to use.
+        :type unpacker: Unpacker
+        :param options: the options to be used when unpacking the data, defaults to None
+        :type options: UnpackOptions | None, optional
+        :return: the unpacked data
+        :rtype: np.ndarray
+        """
+        if options is None:
+            options = UnpackOptions(
+                nbit=self.header.get_int("NBIT"),
+                npol=self.header.get_int("NPOL"),
+                nchan=self.header.get_int("NCHAN"),
+                ndim=self.header.get_int("NDIM"),
+            )
+
+        assert options.ndim in {
+            1,
+            2,
+        }, f"unpack_tfp currently on supports real or complex valued data. {options.ndim=}"
+
+        return unpacker.unpack(data=self.raw_data, options=options)
