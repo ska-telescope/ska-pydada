@@ -239,13 +239,13 @@ def test_dada_file_unpack_tfp_with_invalid_ndim() -> None:
 
     with pytest.raises(
         AssertionError,
-        match=f"unpack_tfp currently on supports real or complex valued data. options.ndim={ndim}",
+        match=f"unpack_tfp currently supports only real or complex valued data. options.ndim={ndim}",
     ):
         file.unpack_tfp(unpacker=unpacker, options=options)
 
 
 def test_dada_file_unpack_tfp_with_no_options() -> None:
-    """Test that unpack_tfp provides a default unpack options."""
+    """Test that unpack_tfp provides correct default unpack options from AsciiHeader."""
     nbit = 8
     npol = 1
     nchan = 3

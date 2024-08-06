@@ -399,7 +399,7 @@ class DadaFile:
         nchan = self.header.get_int("NCHAN")
         ndim = self.header.get_int("NDIM")
 
-        assert ndim in {1, 2}, f"currently on supports real or complex valued data. {ndim=}"
+        assert ndim in {1, 2}, f"currently supports only real or complex valued data. {ndim=}"
 
         if ndim == 2:
             assert self.data_size % (npol * nchan * SIZE_OF_COMPLEX64) == 0, (
@@ -465,7 +465,7 @@ class DadaFile:
         """
         Unpack the raw data using a specified unpacker and options.
 
-        If no unpack options are used a default options is created based of the ``AsciiHeader`` of the
+        If no unpack options are specified, then defaults are based on the ``AsciiHeader`` of the
         current DADA file.
 
         :param unpacker: the specific unpacker to use.
@@ -486,6 +486,6 @@ class DadaFile:
         assert options.ndim in {
             1,
             2,
-        }, f"unpack_tfp currently on supports real or complex valued data. {options.ndim=}"
+        }, f"unpack_tfp currently supports only real or complex valued data. {options.ndim=}"
 
         return unpacker.unpack(data=self.raw_data, options=options)

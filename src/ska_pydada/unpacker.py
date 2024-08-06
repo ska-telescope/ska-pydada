@@ -48,7 +48,7 @@ NBIT_FLOAT = -32
 
 @dataclasses.dataclass(kw_only=True, frozen=True)
 class UnpackOptions:
-    """A data class used define the options to use during unpacking of data."""
+    """A data class that defines the options to use during unpacking of data."""
 
     nbit: int
     """
@@ -124,7 +124,7 @@ SKA_DIGI_SCALE_MEAN: Dict[int, Tuple[float, float]] = {
     16: (1106.4, 0.0),
     -32: (1.0, 0.0),
 }
-"""The scales and means applied to data in the SKA Generice Voltage Digitiser."""
+"""The scales and means applied to data in the SKA Generic Voltage Digitiser."""
 
 
 class SkaUnpacker:
@@ -135,7 +135,7 @@ class SkaUnpacker:
     such as the the flow through mode data that has been digitised.
     """
 
-    def _rescal_and_reshape(
+    def _rescale_and_reshape(
         self, *, data: np.ndarray, nchan: int, npol: int, ndim: int, nbit: int
     ) -> np.ndarray:
         data = data.reshape((-1, nchan, npol, ndim))
@@ -157,19 +157,20 @@ class SkaUnpacker:
     ) -> np.ndarray:
         # always cast to float, as Numpy doesn't have a non-float based complex number.
         data = np.frombuffer(raw_data, dtype=dtype).astype(np.float32)
-        return self._rescal_and_reshape(data=data, nchan=nchan, npol=npol, ndim=ndim, nbit=nbit)
+        return self._rescale_and_reshape(data=data, nchan=nchan, npol=npol, ndim=ndim, nbit=nbit)
 
     def _unpack_bytes(self, raw_data: bytes, nchan: int, npol: int, ndim: int, nbit: int) -> np.ndarray:
-        # TODO - assert nbit is 1, 2 or 4
+        assert nbit in {1, 2, 4}, f"expected {nbit=} to be either 1, 2 or 4"
         bit_mask = np.int8(pow(2, nbit) - 1)
         msb = np.uint8(1 << (nbit - 1))
 
         values_per_byte = 8 // nbit
         values_per_sample = nchan * npol * ndim
 
-        assert (
-            len(raw_data) * values_per_byte
-        ) % values_per_sample == 0, "Expected number of samples to be ???"
+        assert (len(raw_data) * values_per_byte) % values_per_sample == 0, (
+            f"Expected number of samples to be {len(raw_data) * values_per_byte} to be divisible "
+            f"by nchan*npol*ndim={nchan*npol*ndim}"
+        )
         ndat = len(raw_data) * values_per_byte // values_per_sample
 
         data = np.zeros(shape=(len(raw_data) * values_per_byte), dtype=np.float32)
@@ -182,12 +183,20 @@ class SkaUnpacker:
             bit_shifted_value = in_value >> (nbit * value_shift)
             value = int(bit_shifted_value & bit_mask)
 
+            # This handles the twos complement of negative numbers when nbits < 8.
+            # The msb is a mask for the most significant bit of NBIT. Doing a bitwise
+            # or we can see if the number should be negative.  If it is then cast
+            # the bit_mask as an integer and flip bits and then do bitwise or on
+            # the value.
+            #
+            # e.g NBIT = 2, msb = 0b10, bit_mask = 0b11
+            # if value = 0b11, then output value should be -1, if 0b10 then value should be -2
             if nbit != 1 and (value & msb):
                 value |= ~int(bit_mask)
 
             data[idx] = np.float32(value)
 
-        return self._rescal_and_reshape(data=data, nchan=nchan, npol=npol, ndim=ndim, nbit=nbit)
+        return self._rescale_and_reshape(data=data, nchan=nchan, npol=npol, ndim=ndim, nbit=nbit)
 
     def unpack(self, *, data: bytes, options: UnpackOptions) -> np.ndarray:
         """Unpack SKA specific data given the unpack option.
