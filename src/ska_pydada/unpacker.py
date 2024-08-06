@@ -168,7 +168,7 @@ class SkaUnpacker:
         values_per_sample = nchan * npol * ndim
 
         assert (len(raw_data) * values_per_byte) % values_per_sample == 0, (
-            f"Expected number of samples to be {len(raw_data) * values_per_byte} to be divisible "
+            f"Expected number of samples={len(raw_data) * values_per_byte} to be divisible "
             f"by nchan*npol*ndim={nchan*npol*ndim}"
         )
         ndat = len(raw_data) * values_per_byte // values_per_sample
@@ -185,8 +185,8 @@ class SkaUnpacker:
 
             # This handles the twos complement of negative numbers when nbits < 8.
             # The msb is a mask for the most significant bit of NBIT. Doing a bitwise
-            # or we can see if the number should be negative.  If it is then cast
-            # the bit_mask as an integer and flip bits and then do bitwise or on
+            # AND operation we can see if the number should be negative.  If it is then cast
+            # the bit_mask as an integer and flip bits and then do bitwise a OR operation on
             # the value.
             #
             # e.g NBIT = 2, msb = 0b10, bit_mask = 0b11
