@@ -262,3 +262,37 @@ def test_unpack_when_data_not_resolution(nbit: int) -> None:
     expected_shape = (expected_ndat, nchan, npol)
 
     assert unpacked_data.shape == expected_shape, f"expected {unpacked_data.shape=} to equal {expected_shape}"
+
+
+@pytest.mark.parametrize(
+    "nbit,ndim,nsamp,expected_nsamp",
+    [
+        (1, 1, 1, 8),
+        (1, 2, 1, 4),
+        (2, 1, 1, 4),
+        (2, 2, 1, 2),
+        (4, 1, 1, 2),
+        (4, 2, 1, 1),
+        (8, 1, 1, 1),
+        (8, 2, 1, 1),
+        (16, 1, 1, 1),
+        (16, 2, 1, 1),
+        (-32, 1, 1, 1),
+        (-32, 2, 1, 1),
+    ],
+)
+def test_unpack_using_nsamp_for_selecting_data(nbit: int, ndim: int, nsamp: int, expected_nsamp: int) -> None:
+    """Test that unpack only a number of samples rounded up to byte resolution."""
+    nchan = 1
+    npol = 1
+    nbytes = 1000
+
+    source_data = np.random.randint(0, 255, size=nbytes).astype(np.uint8)
+
+    options = UnpackOptions(nbit=nbit, ndim=ndim, nchan=nchan, npol=npol, addition_args={"nsamp": nsamp})
+    unpacker = SkaUnpacker()
+
+    unpacked_data = unpacker.unpack(data=source_data.tobytes(), options=options)
+    expected_shape = (expected_nsamp, nchan, npol)
+
+    assert unpacked_data.shape == expected_shape, f"expected {unpacked_data.shape=} to equal {expected_shape}"

@@ -234,12 +234,22 @@ class SkaUnpacker:
         ndim = options.ndim
 
         # ensure that we can read a whole byte
+        num_resolutions = 1
         resolution_bits = nchan * npol * ndim * abs(nbit)
-        while resolution_bits % BITS_PER_BYTE != 0:
-            resolution_bits *= 2
-        resolution = resolution_bits // BITS_PER_BYTE
+        while (num_resolutions * resolution_bits) % BITS_PER_BYTE != 0:
+            num_resolutions *= 2
+        resolution = (num_resolutions * resolution_bits) // BITS_PER_BYTE
 
         end_idx = len(data) - (len(data) % resolution)
+
+        if "nsamp" in options.addition_args:
+            nsamp = options.nsamp
+            while (nsamp % num_resolutions) != 0:
+                nsamp += 1
+
+            nsamp_end_idx = nsamp * resolution // num_resolutions
+            end_idx = min(end_idx, nsamp_end_idx)
+
         data = data[:end_idx]
 
         if nbit == NBIT_8:
