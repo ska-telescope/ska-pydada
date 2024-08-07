@@ -22,6 +22,8 @@ from typing import Any, Dict, Protocol, Tuple
 import numpy as np
 import numpy.typing as npt
 
+from .common import BITS_PER_BYTE
+
 NDIM_REAL = 1
 """
 Data are real valued.
@@ -212,6 +214,11 @@ class SkaUnpacker:
         header. If ``NDIM`` is 1 then real floating point data is returned, if 2 then
         complex value data is returned.
 
+        This method can only handle data in chunks being a multiple of the resolution,
+        as given by ``NCHAN * NPOL * NDIM * NBIT // 8``. If the length of the data bytes
+        is not a multiple of the resolution this method will ignore the remaining bytes
+        of data.
+
         :param data: the input byte array of data.
         :type data: bytes
         :param options: the options for unpacking
@@ -225,6 +232,15 @@ class SkaUnpacker:
         nchan = options.nchan
         npol = options.npol
         ndim = options.ndim
+
+        # ensure that we can read a whole byte
+        resolution_bits = nchan * npol * ndim * abs(nbit)
+        while resolution_bits % BITS_PER_BYTE != 0:
+            resolution_bits *= 2
+        resolution = resolution_bits // BITS_PER_BYTE
+
+        end_idx = len(data) - (len(data) % resolution)
+        data = data[:end_idx]
 
         if nbit == NBIT_8:
             unpacked = self._unpack_simple(

@@ -12,6 +12,7 @@ import numpy as np
 import pytest
 
 from ska_pydada import SKA_DIGI_SCALE_MEAN, SkaUnpacker, UnpackOptions
+from ska_pydada.common import BITS_PER_BYTE
 
 # fmt: off
 SOURCE_DATA = np.array(
@@ -224,3 +225,40 @@ def test_unpack_options_with_additional_arg() -> None:
 
     with pytest.raises(AttributeError, match="'UnpackOptions' object has no attribute 'bob'"):
         options.bob
+
+
+@pytest.mark.parametrize(
+    "nbit",
+    [
+        1,
+        2,
+        4,
+        8,
+        16,
+        -32,
+    ],
+)
+def test_unpack_when_data_not_resolution(nbit: int) -> None:
+    """Test that unpack can handle data length not a multiple of the resolution."""
+    nchan = 91
+    npol = 3
+    ndim = 2
+    nbytes = 100001
+
+    source_data = np.random.randint(0, 255, size=nbytes).astype(np.uint8)
+
+    options = UnpackOptions(nbit=nbit, ndim=ndim, nchan=nchan, npol=npol)
+    unpacker = SkaUnpacker()
+
+    num_resolutions = 1
+    resolution_bits = nchan * npol * ndim * abs(nbit)
+    while (num_resolutions * resolution_bits) % BITS_PER_BYTE > 0:
+        num_resolutions <<= 1
+
+    effective_resolution = (num_resolutions * resolution_bits) // BITS_PER_BYTE
+    expected_ndat = (nbytes // effective_resolution) * num_resolutions
+
+    unpacked_data = unpacker.unpack(data=source_data.tobytes(), options=options)
+    expected_shape = (expected_ndat, nchan, npol)
+
+    assert unpacked_data.shape == expected_shape, f"expected {unpacked_data.shape=} to equal {expected_shape}"
