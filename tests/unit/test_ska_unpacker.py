@@ -52,6 +52,15 @@ NBIT_16_DATA = np.array([
 ], dtype=np.int16)
 
 NBIT_FLOAT_DATA = SOURCE_DATA
+
+NBIT_POPULATION_MEAN_VAR = {
+    1: (0.0, 1.0),
+    2: (-0.07, 0.79),
+    4: (0.0, 0.98),
+    8: (0.0, 1.0),
+    16: (0.0, 1.0),
+    -32: (0.0, 1.0),
+}
 # fmt: on
 
 
@@ -172,11 +181,10 @@ def test_ska_unpacker_unpack_known_data(nbit: int, input_data: np.ndarray) -> No
         (1, 64, 1, 2),
         (1, 64, 2, 1),
         (1, 128, 1, 1),
-        # NOTE - 2bit packing and unpacking fails assertions
-        # (2, 32, 2, 2),
-        # (2, 64, 1, 2),
-        # (2, 64, 2, 1),
-        # (2, 128, 1, 1),
+        (2, 32, 2, 2),
+        (2, 64, 1, 2),
+        (2, 64, 2, 1),
+        (2, 128, 1, 1),
         (4, 32, 2, 2),
         (4, 64, 1, 2),
         (4, 64, 2, 1),
@@ -208,7 +216,9 @@ def test_ska_unpacker_unpack_random_data(nbit: int, nchan: int, npol: int, ndim:
     if ndim == 2:
         unpacked_data = unpacked_data.view(np.float32)
 
-    _assert_statistics(population_mean=0.0, population_var=1.0, samples=unpacked_data)
+    (population_mean, population_var) = NBIT_POPULATION_MEAN_VAR[nbit]
+
+    _assert_statistics(population_mean=population_mean, population_var=population_var, samples=unpacked_data)
 
 
 def test_unpack_options_with_additional_arg() -> None:
