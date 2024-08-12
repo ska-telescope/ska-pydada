@@ -12,6 +12,7 @@ import numpy as np
 import pytest
 
 from ska_pydada import SKA_DIGI_SCALE_MEAN, SkaUnpacker, UnpackOptions
+from ska_pydada.common import BITS_PER_BYTE
 
 # fmt: off
 SOURCE_DATA = np.array(
@@ -51,6 +52,15 @@ NBIT_16_DATA = np.array([
 ], dtype=np.int16)
 
 NBIT_FLOAT_DATA = SOURCE_DATA
+
+NBIT_POPULATION_MEAN_VAR = {
+    1: (0.0, 1.0),
+    2: (-0.07, 0.79),
+    4: (0.0, 0.98),
+    8: (0.0, 1.0),
+    16: (0.0, 1.0),
+    -32: (0.0, 1.0),
+}
 # fmt: on
 
 
@@ -171,11 +181,10 @@ def test_ska_unpacker_unpack_known_data(nbit: int, input_data: np.ndarray) -> No
         (1, 64, 1, 2),
         (1, 64, 2, 1),
         (1, 128, 1, 1),
-        # NOTE - 2bit packing and unpacking fails assertions
-        # (2, 32, 2, 2),
-        # (2, 64, 1, 2),
-        # (2, 64, 2, 1),
-        # (2, 128, 1, 1),
+        (2, 32, 2, 2),
+        (2, 64, 1, 2),
+        (2, 64, 2, 1),
+        (2, 128, 1, 1),
         (4, 32, 2, 2),
         (4, 64, 1, 2),
         (4, 64, 2, 1),
@@ -207,7 +216,9 @@ def test_ska_unpacker_unpack_random_data(nbit: int, nchan: int, npol: int, ndim:
     if ndim == 2:
         unpacked_data = unpacked_data.view(np.float32)
 
-    _assert_statistics(population_mean=0.0, population_var=1.0, samples=unpacked_data)
+    (population_mean, population_var) = NBIT_POPULATION_MEAN_VAR[nbit]
+
+    _assert_statistics(population_mean=population_mean, population_var=population_var, samples=unpacked_data)
 
 
 def test_unpack_options_with_additional_arg() -> None:
@@ -224,3 +235,74 @@ def test_unpack_options_with_additional_arg() -> None:
 
     with pytest.raises(AttributeError, match="'UnpackOptions' object has no attribute 'bob'"):
         options.bob
+
+
+@pytest.mark.parametrize(
+    "nbit",
+    [
+        1,
+        2,
+        4,
+        8,
+        16,
+        -32,
+    ],
+)
+def test_unpack_when_data_not_resolution(nbit: int) -> None:
+    """Test that unpack can handle data length not a multiple of the resolution."""
+    nchan = 91
+    npol = 3
+    ndim = 2
+    nbytes = 100001
+
+    source_data = np.random.randint(0, 255, size=nbytes).astype(np.uint8)
+
+    options = UnpackOptions(nbit=nbit, ndim=ndim, nchan=nchan, npol=npol)
+    unpacker = SkaUnpacker()
+
+    num_resolutions = 1
+    resolution_bits = nchan * npol * ndim * abs(nbit)
+    while (num_resolutions * resolution_bits) % BITS_PER_BYTE > 0:
+        num_resolutions <<= 1
+
+    effective_resolution = (num_resolutions * resolution_bits) // BITS_PER_BYTE
+    expected_ndat = (nbytes // effective_resolution) * num_resolutions
+
+    unpacked_data = unpacker.unpack(data=source_data.tobytes(), options=options)
+    expected_shape = (expected_ndat, nchan, npol)
+
+    assert unpacked_data.shape == expected_shape, f"expected {unpacked_data.shape=} to equal {expected_shape}"
+
+
+@pytest.mark.parametrize(
+    "nbit,ndim,nsamp,expected_nsamp",
+    [
+        (1, 1, 1, 8),
+        (1, 2, 1, 4),
+        (2, 1, 1, 4),
+        (2, 2, 1, 2),
+        (4, 1, 1, 2),
+        (4, 2, 1, 1),
+        (8, 1, 1, 1),
+        (8, 2, 1, 1),
+        (16, 1, 1, 1),
+        (16, 2, 1, 1),
+        (-32, 1, 1, 1),
+        (-32, 2, 1, 1),
+    ],
+)
+def test_unpack_using_nsamp_for_selecting_data(nbit: int, ndim: int, nsamp: int, expected_nsamp: int) -> None:
+    """Test that unpack only a number of samples rounded up to byte resolution."""
+    nchan = 1
+    npol = 1
+    nbytes = 1000
+
+    source_data = np.random.randint(0, 255, size=nbytes).astype(np.uint8)
+
+    options = UnpackOptions(nbit=nbit, ndim=ndim, nchan=nchan, npol=npol, addition_args={"nsamp": nsamp})
+    unpacker = SkaUnpacker()
+
+    unpacked_data = unpacker.unpack(data=source_data.tobytes(), options=options)
+    expected_shape = (expected_nsamp, nchan, npol)
+
+    assert unpacked_data.shape == expected_shape, f"expected {unpacked_data.shape=} to equal {expected_shape}"
