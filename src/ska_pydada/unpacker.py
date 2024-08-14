@@ -120,10 +120,10 @@ class Unpacker(Protocol):
 
 SKA_DIGI_SCALE_MEAN: Dict[int, Tuple[float, float]] = {
     1: (0.5, 0.5),
-    2: (1.03, 0.0),
-    4: (3.14, 0.0),
-    8: (10.1, 0.0),
-    16: (1106.4, 0.0),
+    2: (1.03, -0.5),
+    4: (3.14, -0.5),
+    8: (10.1, -0.5),
+    16: (1106.4, -0.5),
     -32: (1.0, 0.0),
 }
 """The scales and means applied to data in the SKA Generic Voltage Digitiser."""
