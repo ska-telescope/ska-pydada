@@ -6,7 +6,6 @@
 # See LICENSE.txt for more info.
 
 """Module init code."""
-__version__ = "0.0.1"
 
 __all__ = [
     "AsciiHeader",

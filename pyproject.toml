@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "ska-pydada"
-version = "0.0.1"
+version = "0.1.0"
 description = "SKA Pulsar DADA Library"
 authors = [
     "Andrew Jameson <ajameson@fourierspace.com.au>",
