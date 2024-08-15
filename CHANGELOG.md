@@ -24,4 +24,6 @@
 
 ### Fix
 
+* AT3-793 fix the digitisation offset for SKA Unpacker
+
 ### Other
